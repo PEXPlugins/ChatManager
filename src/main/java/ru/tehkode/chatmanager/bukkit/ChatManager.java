@@ -1,5 +1,5 @@
 /*
- * ChatManager - Chat management plugin for Bukkit
+ * ChatManager - PermissionsEx Chat management plugin for Bukkit
  * Copyright (C) 2011 t3hk0d3 http://www.tehkode.ru
  *
  * This program is free software; you can redistribute it and/or
@@ -21,7 +21,6 @@ package ru.tehkode.chatmanager.bukkit;
 import java.util.logging.Logger;
 import org.bukkit.event.Event.Priority;
 import org.bukkit.event.Event.Type;
-import org.bukkit.event.player.PlayerListener;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.util.config.Configuration;
 import ru.tehkode.permissions.bukkit.PermissionsEx;
