@@ -51,7 +51,7 @@ public class ChatManager extends JavaPlugin {
 
         Configuration config = this.getConfiguration();
 
-        if (config.getProperty("enabled") == null) { // Migrate
+        if (config.getProperty("enable") == null) { // Migrate
             this.initializeConfiguration(config);
         }
 
@@ -59,6 +59,10 @@ public class ChatManager extends JavaPlugin {
 
         if (config.getBoolean("enable", false)) {
             this.getServer().getPluginManager().registerEvent(Type.PLAYER_CHAT, this.listener, Priority.Normal, this);
+            logger.info("[ChatManager] ChatManager enabled!");
+        } else {
+            logger.info("[ChatManager] ChatManager disabled. Check config.yml!");
+            this.getPluginLoader().disablePlugin(this);
         }
 
         config.save();

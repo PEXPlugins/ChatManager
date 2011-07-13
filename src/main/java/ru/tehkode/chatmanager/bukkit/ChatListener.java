@@ -45,12 +45,22 @@ public class ChatListener extends PlayerListener {
     protected String globalMessageFormat = GLOBAL_MESSAGE_FORMAT;
     protected boolean rangedMode = RANGED_MODE;
     protected double chatRange = CHAT_RANGE;
+    
+    protected String optionChatRange = "chat-range";
+    protected String optionMessageFormat = "message-format";
+    protected String optionGlobalMessageFormat = "global-message-format";
+    protected String optionRangedMode = "force-ranged-mode";
 
     public ChatListener(Configuration config) {
-        this.messageFormat = config.getString("permissions.chat.format", this.messageFormat);
-        this.globalMessageFormat = config.getString("permissions.chat.global-format", this.globalMessageFormat);
-        this.rangedMode = config.getBoolean("permissions.chat.force-ranged", this.rangedMode);
-        this.chatRange = config.getDouble("permissions.chat.chat-range", this.chatRange);
+        this.messageFormat = config.getString("message-format", this.messageFormat);
+        this.globalMessageFormat = config.getString("global-message-format", this.globalMessageFormat);
+        this.rangedMode = config.getBoolean("ranged-mode", this.rangedMode);
+        this.chatRange = config.getDouble("chat-range", this.chatRange);
+        
+        this.optionChatRange = config.getString("options.chat-range", this.optionChatRange);
+        this.optionGlobalMessageFormat = config.getString("options.global-message-format", this.optionGlobalMessageFormat);
+        this.optionMessageFormat = config.getString("options.message-format", this.optionMessageFormat);
+        this.optionRangedMode = config.getString("options.ranged-mode", this.optionRangedMode);
     }
 
     @Override
@@ -66,20 +76,20 @@ public class ChatListener extends PlayerListener {
             return;
         }
 
-        String message = user.getOption("message-format", player.getWorld().getName(), messageFormat);
-        boolean localChat = user.getOptionBoolean("force-ranged-chat", player.getWorld().getName(), rangedMode);
+        String message = user.getOption(this.optionMessageFormat, player.getWorld().getName(), messageFormat);
+        boolean localChat = user.getOptionBoolean(this.optionRangedMode, player.getWorld().getName(), rangedMode);
 
         String chatMessage = event.getMessage();
-        if (chatMessage.startsWith("!") && user.has("permissions.chat.global", player.getWorld().getName())) {
+        if (chatMessage.startsWith("!") && user.has("chatmanager.chat.global", player.getWorld().getName())) {
             localChat = false;
             chatMessage = chatMessage.substring(1);
 
-            message = user.getOption("global-message-format", player.getWorld().getName(), globalMessageFormat);
+            message = user.getOption(this.optionGlobalMessageFormat, player.getWorld().getName(), globalMessageFormat);
         }
 
         message = this.colorize(message);
 
-        if (user.has("permissions.chat.color", player.getWorld().getName())) {
+        if (user.has("chatmanager.chat.color", player.getWorld().getName())) {
             chatMessage = this.colorize(chatMessage);
         }
 
@@ -92,8 +102,10 @@ public class ChatListener extends PlayerListener {
         event.setMessage(message);
 
         if (localChat) {
+            double range = user.getOptionDouble(this.optionChatRange, player.getWorld().getName(), chatRange);
+            
             event.getRecipients().clear();
-            event.getRecipients().addAll(this.getLocalRecipients(player, message, user.getOptionDouble("chat-range", player.getWorld().getName(), chatRange)));
+            event.getRecipients().addAll(this.getLocalRecipients(player, message, range));
         }
     }
 
