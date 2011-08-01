@@ -57,10 +57,12 @@ public class ChatListener extends PlayerListener {
         this.rangedMode = config.getBoolean("ranged-mode", this.rangedMode);
         this.chatRange = config.getDouble("chat-range", this.chatRange);
         
+        /*
         this.optionChatRange = config.getString("options.chat-range", this.optionChatRange);
         this.optionGlobalMessageFormat = config.getString("options.global-message-format", this.optionGlobalMessageFormat);
         this.optionMessageFormat = config.getString("options.message-format", this.optionMessageFormat);
         this.optionRangedMode = config.getString("options.ranged-mode", this.optionRangedMode);
+         */
     }
 
     @Override
@@ -93,7 +95,11 @@ public class ChatListener extends PlayerListener {
             chatMessage = this.colorize(chatMessage);
         }
 
-        message = message.replace("%prefix", this.colorize(user.getPrefix())).replace("%suffix", this.colorize(user.getSuffix())).replace("%world", player.getWorld().getName()).replace("%message", chatMessage).replace("%player", player.getName());
+        message = message.replace("%prefix", this.colorize(user.getPrefix()))
+                         .replace("%suffix", this.colorize(user.getSuffix()))
+                         .replace("%world", player.getWorld().getName())
+                         .replace("%message", chatMessage)
+                         .replace("%player", player.getName());
 
         message = this.replaceTime(message);
 
@@ -167,6 +173,10 @@ public class ChatListener extends PlayerListener {
     }
 
     protected String colorize(String string) {
+        if(string == null){
+            return "";
+        }
+        
         return string.replaceAll("&([a-z0-9])", "\u00A7$1");
     }
 }
