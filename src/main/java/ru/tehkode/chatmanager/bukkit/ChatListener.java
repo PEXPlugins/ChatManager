@@ -45,24 +45,20 @@ public class ChatListener extends PlayerListener {
     protected String globalMessageFormat = GLOBAL_MESSAGE_FORMAT;
     protected boolean rangedMode = RANGED_MODE;
     protected double chatRange = CHAT_RANGE;
+    protected String displayNameFormat = "%prefix%player%suffix";
     
     protected String optionChatRange = "chat-range";
     protected String optionMessageFormat = "message-format";
     protected String optionGlobalMessageFormat = "global-message-format";
     protected String optionRangedMode = "force-ranged-mode";
+    protected String optionDisplayname = "display-name-format";
 
     public ChatListener(Configuration config) {
         this.messageFormat = config.getString("message-format", this.messageFormat);
         this.globalMessageFormat = config.getString("global-message-format", this.globalMessageFormat);
         this.rangedMode = config.getBoolean("ranged-mode", this.rangedMode);
         this.chatRange = config.getDouble("chat-range", this.chatRange);
-        
-        /*
-        this.optionChatRange = config.getString("options.chat-range", this.optionChatRange);
-        this.optionGlobalMessageFormat = config.getString("options.global-message-format", this.optionGlobalMessageFormat);
-        this.optionMessageFormat = config.getString("options.message-format", this.optionMessageFormat);
-        this.optionRangedMode = config.getString("options.ranged-mode", this.optionRangedMode);
-         */
+        this.displayNameFormat = config.getString("display-name-format", this.displayNameFormat);
     }
 
     @Override
@@ -72,6 +68,8 @@ public class ChatListener extends PlayerListener {
         }
 
         Player player = event.getPlayer();
+        
+        String worldName = player.getWorld().getName();
 
         PermissionUser user = PermissionsEx.getPermissionManager().getUser(player);
         if (user == null) {
@@ -95,14 +93,9 @@ public class ChatListener extends PlayerListener {
             chatMessage = this.colorize(chatMessage);
         }
 
-        message = message.replace("%prefix", this.colorize(user.getPrefix()))
-                         .replace("%suffix", this.colorize(user.getSuffix()))
-                         .replace("%world", player.getWorld().getName())
-                         .replace("%message", chatMessage)
-                         .replace("%player", player.getName());
-
+        message = message.replace("%message", chatMessage).replace("%displayname", player.getDisplayName());
+        message = this.replacePlayerPlaceholders(player, message);
         message = this.replaceTime(message);
-
 
         event.setFormat("%2$s");
         event.setMessage(message);
@@ -114,7 +107,32 @@ public class ChatListener extends PlayerListener {
             event.getRecipients().addAll(this.getLocalRecipients(player, message, range));
         }
     }
-
+    
+    protected void updateDisplayNames(){
+        for(Player player : Bukkit.getServer().getOnlinePlayers()){
+            updateDisplayName(player);
+        }
+    }
+    
+    protected void updateDisplayName(Player player){
+        PermissionUser user = PermissionsEx.getPermissionManager().getUser(player);
+        if (user == null) {
+            return;
+        }
+        
+        String worldName = player.getWorld().getName();
+        player.setDisplayName(this.colorize(this.replacePlayerPlaceholders(player, user.getOption(this.optionDisplayname, worldName, this.displayNameFormat))));
+    }
+    
+    protected String replacePlayerPlaceholders(Player player, String format){
+        PermissionUser user = PermissionsEx.getPermissionManager().getUser(player);
+        String worldName = player.getWorld().getName();  
+        return format.replace("%prefix", this.colorize(user.getPrefix(worldName)))
+                     .replace("%suffix", this.colorize(user.getSuffix(worldName)))
+                     .replace("%world", worldName)                     
+                     .replace("%player", player.getName());
+    }
+    
     protected List<Player> getLocalRecipients(Player sender, String message, double range) {
         Location playerLocation = sender.getLocation();
         List<Player> recipients = new LinkedList<Player>();
