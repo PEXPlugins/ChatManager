@@ -34,6 +34,7 @@ public class ChatManager extends JavaPlugin {
     protected final static Logger logger = Logger.getLogger("Minecraft");
     
     protected ChatListener listener;
+    protected PluginListener pluginListener;
 
     public ChatManager() {
     }
@@ -56,10 +57,14 @@ public class ChatManager extends JavaPlugin {
         }
 
         this.listener = new ChatListener(config);
+        this.pluginListener = new PluginListener(this);
 
         if (config.getBoolean("enable", false)) {
             this.getServer().getPluginManager().registerEvent(Type.PLAYER_CHAT, this.listener, Priority.Normal, this);
+            this.getServer().getPluginManager().registerEvent(Type.PLUGIN_ENABLE, this.pluginListener, Priority.Normal, this);
             logger.info("[ChatManager] ChatManager enabled!");
+            // Make sure MV didn't load before we did.
+            this.pluginListener.checkForMultiverse(this.getServer().getPluginManager().getPlugin("Multiverse-Core"));
         } else {
             logger.info("[ChatManager] ChatManager disabled. Check config.yml!");
             this.getPluginLoader().disablePlugin(this);
