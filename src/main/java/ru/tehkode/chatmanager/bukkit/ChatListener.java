@@ -80,7 +80,7 @@ public class ChatListener extends PlayerListener {
         boolean localChat = user.getOptionBoolean(this.optionRangedMode, player.getWorld().getName(), rangedMode);
 
         String chatMessage = event.getMessage();
-        if (chatMessage.startsWith("!") && user.has("chatmanager.chat.global", player.getWorld().getName())) {
+        if (localChat && chatMessage.startsWith("!") && user.has("chatmanager.chat.global", player.getWorld().getName())) {
             localChat = false;
             chatMessage = chatMessage.substring(1);
 
@@ -92,8 +92,13 @@ public class ChatListener extends PlayerListener {
         if (user.has("chatmanager.chat.color", player.getWorld().getName())) {
             chatMessage = this.colorize(chatMessage);
         }
+        
 
-        message = message.replace("%prefix", this.colorize(user.getPrefix())).replace("%suffix", this.colorize(user.getSuffix())).replace("%world", player.getWorld().getName()).replace("%message", chatMessage).replace("%player", player.getName());
+        message = message.replace("%prefix", this.colorize(user.getPrefix()))
+                .replace("%suffix", this.colorize(user.getSuffix()))
+                .replace("%world", player.getWorld().getName())
+                .replace("%message", chatMessage)
+                .replace("%player", player.getName());
 
         message = this.replaceTime(message);
 
@@ -105,11 +110,11 @@ public class ChatListener extends PlayerListener {
             double range = user.getOptionDouble(this.optionChatRange, player.getWorld().getName(), chatRange);
             
             event.getRecipients().clear();
-            event.getRecipients().addAll(this.getLocalRecipients(player, message, range));
+            event.getRecipients().addAll(this.getLocalRecipients(player, range));
         }
     }
 
-    protected List<Player> getLocalRecipients(Player sender, String message, double range) {
+    protected List<Player> getLocalRecipients(Player sender, double range) {
         Location playerLocation = sender.getLocation();
         List<Player> recipients = new LinkedList<Player>();
         double squaredDistance = Math.pow(range, 2);

@@ -29,13 +29,13 @@ import ru.tehkode.permissions.bukkit.PermissionsEx;
  *
  * @author t3hk0d3
  */
-public class ChatManager extends JavaPlugin {
+public class ChatManagerPlugin extends JavaPlugin {
 
     protected final static Logger logger = Logger.getLogger("Minecraft");
     
     protected ChatListener listener;
 
-    public ChatManager() {
+    public ChatManagerPlugin() {
     }
 
     @Override
