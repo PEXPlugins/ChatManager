@@ -93,12 +93,12 @@ public class ChatListener extends PlayerListener {
             chatMessage = this.colorize(chatMessage);
         }
 
-        message = message.replace("%message", chatMessage).replace("%displayname", player.getDisplayName());
+        message = message.replace("%message", "%2$s").replace("%displayname", "%1$s");
         message = this.replacePlayerPlaceholders(player, message);
         message = this.replaceTime(message);
-
-        event.setFormat("%2$s");
-        event.setMessage(message);
+        
+        event.setFormat(message);
+        event.setMessage(chatMessage);
 
         if (localChat) {
             double range = user.getOptionDouble(this.optionChatRange, player.getWorld().getName(), chatRange);
