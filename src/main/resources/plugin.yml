@@ -1,5 +1,5 @@
 name: ChatManager
-main: ru.tehkode.chatmanager.bukkit.ChatManager
+main: ru.tehkode.chatmanager.bukkit.ChatManagerPlugin
 depend: [ PermissionsEx ]
 version: 1.13
 author: t3hk0d3

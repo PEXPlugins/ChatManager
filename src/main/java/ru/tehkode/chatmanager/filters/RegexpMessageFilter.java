@@ -25,7 +25,7 @@ public class RegexpMessageFilter implements MessageFilter {
         }
 
         try {
-            this.pattern = Pattern.compile(pattern, Pattern.CASE_INSENSITIVE);
+            this.pattern = Pattern.compile(pattern, Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
         } catch (PatternSyntaxException e) {
             throw new RuntimeException("Invalid regular expression specified: " + e.getMessage());
         }

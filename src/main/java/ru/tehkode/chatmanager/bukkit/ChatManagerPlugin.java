@@ -23,6 +23,7 @@ import org.bukkit.event.Event.Priority;
 import org.bukkit.event.Event.Type;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.util.config.Configuration;
+import ru.tehkode.chatmanager.ChatManager;
 import ru.tehkode.permissions.bukkit.PermissionsEx;
 
 /**
@@ -33,7 +34,7 @@ public class ChatManagerPlugin extends JavaPlugin {
 
     protected final static Logger logger = Logger.getLogger("Minecraft");
     
-    protected ChatListener listener;
+    protected ChatManager manager;
 
     public ChatManagerPlugin() {
     }
@@ -50,15 +51,10 @@ public class ChatManagerPlugin extends JavaPlugin {
         }
 
         Configuration config = this.getConfiguration();
-
-        if (config.getProperty("enable") == null) { // Migrate
-            this.initializeConfiguration(config);
-        }
-
-        this.listener = new ChatListener(config);
-
+		
         if (config.getBoolean("enable", false)) {
-            this.getServer().getPluginManager().registerEvent(Type.PLAYER_CHAT, this.listener, Priority.Normal, this);
+            this.manager = new ChatManager(config);
+            this.manager.registerEvents(this);
             logger.info("[ChatManager] ChatManager enabled!");
         } else {
             logger.info("[ChatManager] ChatManager disabled. Check config.yml!");
@@ -70,25 +66,8 @@ public class ChatManagerPlugin extends JavaPlugin {
 
     @Override
     public void onDisable() {
-        this.listener = null;
+        this.manager = null;
         
         logger.info("[ChatManager] ChatManager disabled!");
     }
-
-    protected void initializeConfiguration(Configuration config) {
-        // At migrate and setup defaults
-        PermissionsEx pex = (PermissionsEx) this.getServer().getPluginManager().getPlugin("PermissionsEx");
-
-        ru.tehkode.permissions.config.Configuration pexConfig = pex.getConfig();
-
-        // Flags
-        config.setProperty("enable", pexConfig.getBoolean("permissions.chat.enable", false));
-        config.setProperty("message-format", pexConfig.getString("permissions.chat.format", ChatListener.MESSAGE_FORMAT));
-        config.setProperty("global-message-format", pexConfig.getString("permissions.chat.global-format", ChatListener.GLOBAL_MESSAGE_FORMAT));
-        config.setProperty("ranged-mode", pexConfig.getBoolean("permissions.chat.force-ranged", ChatListener.RANGED_MODE));
-        config.setProperty("chat-range", pexConfig.getDouble("permissions.chat.chat-range", ChatListener.CHAT_RANGE));
-
-        config.save();
-    }
-
 }

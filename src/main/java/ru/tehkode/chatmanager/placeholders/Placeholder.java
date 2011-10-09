@@ -4,17 +4,18 @@
  */
 package ru.tehkode.chatmanager.placeholders;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import org.bukkit.event.player.PlayerChatEvent;
 
 /**
  *
- * @author t3hk0d3
+ * @author code
  */
-@Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.METHOD)
-public @interface Placeholder {
-    String value();
+public interface Placeholder {
+	public final static String SIGN = "%";
+
+	public String[] getPatterns();
+	
+	public String getValue(String pattern, String value, PlayerChatEvent event);
+	
+	public void start(PlayerChatEvent event);
 }

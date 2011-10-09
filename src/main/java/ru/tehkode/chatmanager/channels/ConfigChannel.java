@@ -18,6 +18,13 @@
  */
 package ru.tehkode.chatmanager.channels;
 
-public class ConfigChannel extends ChatChannel {
+import org.bukkit.util.config.ConfigurationNode;
+
+public class ConfigChannel extends BasicChannel {
+
+	public ConfigChannel(ConfigurationNode config, ChatChannel parentChannel) {
+		super(parentChannel);
+	}
+	
 	
 }

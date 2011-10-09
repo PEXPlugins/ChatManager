@@ -4,72 +4,104 @@
  */
 package ru.tehkode.chatmanager.placeholders;
 
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.logging.Logger;
 import org.bukkit.event.player.PlayerChatEvent;
-import ru.tehkode.permissions.PermissionUser;
 
 /**
  *
  * @author t3hk0d3
  */
-public abstract class PlaceholderCollection {
+public abstract class PlaceholderCollection implements Placeholder {
 
-    protected Map<String, PlaceholderExecutor> placeholders = new HashMap<String, PlaceholderExecutor>();
+	// this can be made adjustable
+	protected Map<String, Placeholder> placeholders = new HashMap<String, Placeholder>();
 
-    public PlaceholderCollection() {
-        this.registerPlaceholders();
-    }
+	public PlaceholderCollection() {
+		this.registerPlaceholders();
+	}
+	
+	public Map<String, Placeholder> getPlaceholders(){
+		return this.placeholders;
+	}
+	
+	private void registerPlaceholders() {
+		for (Method method : this.getClass().getMethods()) {
+			if (!method.isAnnotationPresent(PlaceholderItem.class)) {
+				continue;
+			}
 
-    public final String replace(String string, PlayerChatEvent event, PermissionUser user) {
-        for (Map.Entry<String, PlaceholderExecutor> entry : placeholders.entrySet()) {
-            if (!string.contains(entry.getKey())) {
-                continue;
-            }
-            String value = "";
+			PlaceholderItem annotation = method.getAnnotation(PlaceholderItem.class);
 
-            try {
-                value = entry.getValue().replace(entry.getKey(), event, user);
-            } catch (Throwable e) {
-                Logger.getLogger("Minecraft").warning("[ChatManager] Error during replacing placeholder \"%" + entry.getKey() + "\": " + e.getMessage());
-            }
+			if (annotation.value().isEmpty()) {
+				continue;
+			}
 
-            string = string.replace(entry.getKey(), value);
-        }
+			this.placeholders.put(annotation.value(), this.createPlaceholder(annotation.value(), method));
+		}
+	}
 
+	@Override
+	public String[] getPatterns() {
+		return this.placeholders.keySet().toArray(new String[0]);
+	}
 
-        return string;
-    }
+	@Override
+	public String getValue(String pattern, String value, PlayerChatEvent event) {
+		Placeholder placeholder = this.placeholders.get(pattern);		
+		
+		if(placeholder == null){
+			return "";
+		}
+		
+		return placeholder.getValue(pattern, value, event);
+	}
 
-    private void registerPlaceholders() {
-        for (Method method : this.getClass().getMethods()) {
-            if (!method.isAnnotationPresent(Placeholder.class)) {
-                continue;
-            }
+	@Override
+	public void start(PlayerChatEvent event) {
+		// do nothing
+	}
 
-            Placeholder placeholder = method.getAnnotation(Placeholder.class);
-            
-            if (placeholder.value().isEmpty()) {
-                continue;
-            }
+	protected Placeholder createPlaceholder(final String pattern, final Method method) {
+		Class<?>[] params = method.getParameterTypes();
 
-            this.placeholders.put(placeholder.value(), this.createExecutor(placeholder.value(), method));
-        }
-    }
+		final PlaceholderCollection collection = this;
 
-    protected PlaceholderExecutor createExecutor(final String pattern, final Method method) {
-        Class<?>[] params = method.getParameterTypes();
+		return new Placeholder() {
 
-        final PlaceholderCollection collection = this;
+			@Override
+			public void start(PlayerChatEvent event) {
+				collection.start(event);
+			}			
+			
+			@Override
+			public String[] getPatterns() {
+				return new String[] { pattern };
+			}			
+			
+			@Override
+			public String getValue(String pattern, String arg, PlayerChatEvent message) {
+				try {
+					return (String) method.invoke(collection, pattern, arg, message);
+				} catch (Throwable e) {
+					e.printStackTrace();
+				}
+				
+				// return empty string
+				return "";
+			}
+		};
+	}
 
-        return new PlaceholderExecutor() {
+	@Retention(RetentionPolicy.RUNTIME)
+	@Target(ElementType.METHOD)
+	public @interface PlaceholderItem {
 
-            @Override
-            public String replace(String pattern, PlayerChatEvent event, PermissionUser user) throws Throwable {
-                return (String) method.invoke(collection, pattern, event, user);
-            }
-        };
-    }
+		String value();
+	}
 }
