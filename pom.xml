@@ -10,6 +10,14 @@
         <system>GitHub</system>
         <url>https://github.com/t3hk0d3/ChatManager/issues</url>
     </issueManagement>
+    <!-- Repo for Multiverse-Core Dependency -->
+    <repositories>
+        <repository>
+            <id>OnARandomBox</id>
+            <url>http://repo.onarandombox.com/artifactory/repo</url>
+        </repository>
+    </repositories>
+    <!-- Repo for Multiverse-Core Dependency -->
     <build>
         <finalName>${project.artifactId}</finalName>
         <plugins>
@@ -52,6 +60,15 @@
             <artifactId>PermissionsEx</artifactId>
             <version>1.14</version>
         </dependency>
+        <!-- Multiverse-Core Dependency -->
+        <dependency>
+            <groupId>com.onarandombox.multiversecore</groupId>
+            <artifactId>Multiverse-Core</artifactId>
+            <version>2.0</version>
+            <type>jar</type>
+            <scope>compile</scope>
+        </dependency>
+        <!-- Multiverse-Core Dependency -->
     </dependencies>
     
     <properties>

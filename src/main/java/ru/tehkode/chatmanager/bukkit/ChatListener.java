@@ -27,6 +27,8 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerChatEvent;
 import org.bukkit.event.player.PlayerListener;
 import org.bukkit.util.config.Configuration;
+
+import ru.tehkode.chatmanager.bukkit.utils.MultiverseConnector;
 import ru.tehkode.permissions.PermissionUser;
 import ru.tehkode.permissions.bukkit.PermissionsEx;
 
@@ -52,6 +54,7 @@ public class ChatListener extends PlayerListener {
     protected String optionGlobalMessageFormat = "global-message-format";
     protected String optionRangedMode = "force-ranged-mode";
     protected String optionDisplayname = "display-name-format";
+    private MultiverseConnector multiverseConnector;
 
     public ChatListener(Configuration config) {
         this.messageFormat = config.getString("message-format", this.messageFormat);
@@ -68,8 +71,6 @@ public class ChatListener extends PlayerListener {
         }
 
         Player player = event.getPlayer();
-        
-        String worldName = player.getWorld().getName();
 
         PermissionUser user = PermissionsEx.getPermissionManager().getUser(player);
         if (user == null) {
@@ -129,7 +130,7 @@ public class ChatListener extends PlayerListener {
         String worldName = player.getWorld().getName();  
         return format.replace("%prefix", this.colorize(user.getPrefix(worldName)))
                      .replace("%suffix", this.colorize(user.getSuffix(worldName)))
-                     .replace("%world", worldName)                     
+                     .replace("%world", this.getWorldAlias(worldName))                     
                      .replace("%player", player.getName());
     }
     
@@ -196,5 +197,26 @@ public class ChatListener extends PlayerListener {
         }
         
         return string.replaceAll("&([a-z0-9])", "\u00A7$1");
+    }
+    /**
+     * Initializes the MVConnector.
+     * 
+     * @param conn The MultiverseConnector instance
+     */
+    protected void setupMultiverseConnector(MultiverseConnector conn) {
+        this.multiverseConnector = conn;
+    }
+    
+    /**
+     * Returns a colored world string provided by Multiverse
+     * 
+     * @param world The world to retrieve the string about.
+     * @return A colored worldstring if the connector is present, the normal world if it is not.
+     */
+    private String getWorldAlias(String world) {
+        if(this.multiverseConnector != null) {
+            return multiverseConnector.getColoredAliasForWorld(world);
+        }
+        return world;
     }
 }
