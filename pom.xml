@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>ru.tehkode</groupId>
     <artifactId>ChatManager</artifactId>
-    <version>1.14</version>
+    <version>1.15</version>
     <name>ChatManager</name>
     <url>https://github.com/t3hk0d3/ChatManager</url>
     <issueManagement>
