@@ -27,6 +27,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerChatEvent;
 import org.bukkit.event.player.PlayerListener;
 import org.bukkit.util.config.Configuration;
+import ru.tehkode.permissions.PermissionManager;
 import ru.tehkode.permissions.PermissionUser;
 import ru.tehkode.permissions.bukkit.PermissionsEx;
 
@@ -137,13 +138,14 @@ public class ChatListener extends PlayerListener {
         Location playerLocation = sender.getLocation();
         List<Player> recipients = new LinkedList<Player>();
         double squaredDistance = Math.pow(range, 2);
+        PermissionManager manager = PermissionsEx.getPermissionManager();
         for (Player recipient : Bukkit.getServer().getOnlinePlayers()) {
             // Recipient are not from same world
             if (!recipient.getWorld().equals(sender.getWorld())) {
                 continue;
             }
 
-            if (playerLocation.distanceSquared(recipient.getLocation()) > squaredDistance) {
+            if (playerLocation.distanceSquared(recipient.getLocation()) > squaredDistance && !manager.has(sender, "chatmanager.override.ranged")) {
                 continue;
             }
 
