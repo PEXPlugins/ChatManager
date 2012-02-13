@@ -38,7 +38,8 @@ import ru.tehkode.permissions.bukkit.PermissionsEx;
  * @author t3hk0d3
  */
 public class ChatListener extends PlayerListener {
-	protected static Pattern chatColorPattern = Pattern.compile("&([a-z0-9])");
+	protected static Pattern chatColorPattern = Pattern.compile("(?i)&([0-9A-F])");
+	protected static Pattern chatMagicPattern = Pattern.compile("(?i)&([K])");
 	
 	public final static String MESSAGE_FORMAT = "<%prefix%player%suffix> %message";
 	public final static String GLOBAL_MESSAGE_FORMAT = "<%prefix%player%suffix> &e%message";
@@ -90,9 +91,13 @@ public class ChatListener extends PlayerListener {
 		}
 
 		message = this.colorize(message);
+		message = this.magicify(message);
 
 		if (user.has("chatmanager.chat.color", player.getWorld().getName())) {
 			chatMessage = this.colorize(chatMessage);
+		}
+		if (user.has("chatmanager.chat.magic", player.getWorld().getName())) {
+			chatMessage = this.magicify(chatMessage);
 		}
 
 		message = message.replace("%message", "%2$s").replace("%displayname", "%1$s");
@@ -123,13 +128,13 @@ public class ChatListener extends PlayerListener {
 		}
 
 		String worldName = player.getWorld().getName();
-		player.setDisplayName(this.colorize(this.replacePlayerPlaceholders(player, user.getOption(this.optionDisplayname, worldName, this.displayNameFormat))));
+		player.setDisplayName(this.magicify(this.colorize(this.replacePlayerPlaceholders(player, user.getOption(this.optionDisplayname, worldName, this.displayNameFormat)))));
 	}
 
 	protected String replacePlayerPlaceholders(Player player, String format) {
 		PermissionUser user = PermissionsEx.getPermissionManager().getUser(player);
 		String worldName = player.getWorld().getName();
-		return format.replace("%prefix", this.colorize(user.getPrefix(worldName))).replace("%suffix", this.colorize(user.getSuffix(worldName))).replace("%world", worldName).replace("%player", player.getName());
+		return format.replace("%prefix", this.magicify(this.colorize(user.getPrefix(worldName)))).replace("%suffix", this.magicify(this.colorize(user.getSuffix(worldName)))).replace("%world", worldName).replace("%player", player.getName());
 	}
 
 	protected List<Player> getLocalRecipients(Player sender, String message, double range) {
@@ -195,6 +200,14 @@ public class ChatListener extends PlayerListener {
 			return "";
 		}
 
-		return chatColorPattern.matcher(string).replaceAll( "\u00A7$1");
+		return chatColorPattern.matcher(string).replaceAll("\u00A7$1");
+	}
+
+	protected String magicify(String string) {
+		if (string == null) {
+			return "";
+		}
+
+		return chatMagicPattern.matcher(string).replaceAll("\u00A7$1");
 	}
 }
