@@ -76,16 +76,16 @@ public class ChatManager extends JavaPlugin {
         // At migrate and setup defaults
         PermissionsEx pex = (PermissionsEx) this.getServer().getPluginManager().getPlugin("PermissionsEx");
 
-        FileConfiguration pexConfig = pex.getConfiguration();
+        FileConfiguration pexConfig = pex.getConfig();
 
         // Flags
-        config.setProperty("enable", pexConfig.getBoolean("permissions.chat.enable", false));
-        config.setProperty("message-format", pexConfig.getString("permissions.chat.format", ChatListener.MESSAGE_FORMAT));
-        config.setProperty("global-message-format", pexConfig.getString("permissions.chat.global-format", ChatListener.GLOBAL_MESSAGE_FORMAT));
-        config.setProperty("ranged-mode", pexConfig.getBoolean("permissions.chat.force-ranged", ChatListener.RANGED_MODE));
-        config.setProperty("chat-range", pexConfig.getDouble("permissions.chat.chat-range", ChatListener.CHAT_RANGE));
-
-        config.save();
+        config.set("enable", pexConfig.getBoolean("permissions.chat.enable", false));
+        config.set("message-format", pexConfig.getString("permissions.chat.format", ChatListener.MESSAGE_FORMAT));
+        config.set("global-message-format", pexConfig.getString("permissions.chat.global-format", ChatListener.GLOBAL_MESSAGE_FORMAT));
+        config.set("ranged-mode", pexConfig.getBoolean("permissions.chat.force-ranged", ChatListener.RANGED_MODE));
+        config.set("chat-range", pexConfig.getDouble("permissions.chat.chat-range", ChatListener.CHAT_RANGE));
+        
+        pex.saveConfig();
     }
 
 }
