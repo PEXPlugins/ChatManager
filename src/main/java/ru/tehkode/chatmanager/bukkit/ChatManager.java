@@ -30,7 +30,7 @@ import ru.tehkode.permissions.bukkit.PermissionsEx;
  */
 public class ChatManager extends JavaPlugin {
 
-    protected Logger log;
+    protected static Logger log;
     protected ChatListener listener;
 
     @Override
