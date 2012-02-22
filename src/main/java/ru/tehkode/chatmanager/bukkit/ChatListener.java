@@ -21,14 +21,14 @@ package ru.tehkode.chatmanager.bukkit;
 import java.util.Calendar;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerChatEvent;
-import org.bukkit.event.player.PlayerListener;
-import org.bukkit.util.config.Configuration;
 import ru.tehkode.permissions.PermissionManager;
 import ru.tehkode.permissions.PermissionUser;
 import ru.tehkode.permissions.bukkit.PermissionsEx;
@@ -37,7 +37,7 @@ import ru.tehkode.permissions.bukkit.PermissionsEx;
  *
  * @author t3hk0d3
  */
-public class ChatListener extends PlayerListener {
+public class ChatListener implements Listener {
 	protected static Pattern chatColorPattern = Pattern.compile("(?i)&([0-9A-F])");
 	protected static Pattern chatMagicPattern = Pattern.compile("(?i)&([K])");
 	
@@ -56,7 +56,7 @@ public class ChatListener extends PlayerListener {
 	protected String optionRangedMode = "force-ranged-mode";
 	protected String optionDisplayname = "display-name-format";
 
-	public ChatListener(Configuration config) {
+	public ChatListener(FileConfiguration config) {
 		this.messageFormat = config.getString("message-format", this.messageFormat);
 		this.globalMessageFormat = config.getString("global-message-format", this.globalMessageFormat);
 		this.rangedMode = config.getBoolean("ranged-mode", this.rangedMode);
@@ -64,7 +64,7 @@ public class ChatListener extends PlayerListener {
 		this.displayNameFormat = config.getString("display-name-format", this.displayNameFormat);
 	}
 
-	@Override
+	@EventHandler
 	public void onPlayerChat(PlayerChatEvent event) {
 		if (event.isCancelled()) {
 			return;
@@ -79,24 +79,24 @@ public class ChatListener extends PlayerListener {
 			return;
 		}
 
-		String message = user.getOption(this.optionMessageFormat, player.getWorld().getName(), messageFormat);
-		boolean localChat = user.getOptionBoolean(this.optionRangedMode, player.getWorld().getName(), rangedMode);
+		String message = user.getOption(this.optionMessageFormat, worldName, messageFormat);
+		boolean localChat = user.getOptionBoolean(this.optionRangedMode, worldName, rangedMode);
 
 		String chatMessage = event.getMessage();
-		if (chatMessage.startsWith("!") && user.has("chatmanager.chat.global", player.getWorld().getName())) {
+		if (chatMessage.startsWith("!") && user.has("chatmanager.chat.global", worldName)) {
 			localChat = false;
 			chatMessage = chatMessage.substring(1);
 
-			message = user.getOption(this.optionGlobalMessageFormat, player.getWorld().getName(), globalMessageFormat);
+			message = user.getOption(this.optionGlobalMessageFormat, worldName, globalMessageFormat);
 		}
 
 		message = this.colorize(message);
 		message = this.magicify(message);
 
-		if (user.has("chatmanager.chat.color", player.getWorld().getName())) {
+		if (user.has("chatmanager.chat.color", worldName)) {
 			chatMessage = this.colorize(chatMessage);
 		}
-		if (user.has("chatmanager.chat.magic", player.getWorld().getName())) {
+		if (user.has("chatmanager.chat.magic", worldName)) {
 			chatMessage = this.magicify(chatMessage);
 		}
 
@@ -108,7 +108,7 @@ public class ChatListener extends PlayerListener {
 		event.setMessage(chatMessage);
 
 		if (localChat) {
-			double range = user.getOptionDouble(this.optionChatRange, player.getWorld().getName(), chatRange);
+			double range = user.getOptionDouble(this.optionChatRange, worldName, chatRange);
 
 			event.getRecipients().clear();
 			event.getRecipients().addAll(this.getLocalRecipients(player, message, range));
