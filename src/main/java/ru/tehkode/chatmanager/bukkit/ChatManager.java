@@ -19,10 +19,9 @@
 package ru.tehkode.chatmanager.bukkit;
 
 import java.util.logging.Logger;
-import org.bukkit.event.Event.Priority;
-import org.bukkit.event.Event.Type;
+
+import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.bukkit.util.config.Configuration;
 import ru.tehkode.permissions.bukkit.PermissionsEx;
 
 /**
@@ -31,64 +30,62 @@ import ru.tehkode.permissions.bukkit.PermissionsEx;
  */
 public class ChatManager extends JavaPlugin {
 
-    protected final static Logger logger = Logger.getLogger("Minecraft");
-    
+    protected static Logger log;
     protected ChatListener listener;
-
-    public ChatManager() {
-    }
 
     @Override
     public void onEnable() {
-        // At first check PEX existance
+    	log = this.getLogger();
+    	
+        // At first check PEX existence
         try {
             PermissionsEx.getPermissionManager();
         } catch (Throwable e) {
-            logger.severe("[ChatManager] PermissionsEx not found, disabling");
+            log.severe("PermissionsEx not found, disabling");
             this.getPluginLoader().disablePlugin(this);
             return;
         }
 
-        Configuration config = this.getConfiguration();
+        FileConfiguration config = this.getConfig();
 
-        if (config.getProperty("enable") == null) { // Migrate
+        if (config.get("enable") == null) { // Migrate
             this.initializeConfiguration(config);
         }
 
         this.listener = new ChatListener(config);
 
         if (config.getBoolean("enable", false)) {
-            this.getServer().getPluginManager().registerEvent(Type.PLAYER_CHAT, this.listener, Priority.Normal, this);
-            logger.info("[ChatManager] ChatManager enabled!");
+            this.getServer().getPluginManager().registerEvents(listener, this);
+            log.info("ChatManager enabled!");
         } else {
-            logger.info("[ChatManager] ChatManager disabled. Check config.yml!");
+        	log.info("ChatManager disabled. Check config.yml!");
             this.getPluginLoader().disablePlugin(this);
         }
 
-        config.save();
+        this.saveConfig();
     }
 
     @Override
     public void onDisable() {
         this.listener = null;
         
-        logger.info("[ChatManager] ChatManager disabled!");
+        log.info("ChatManager disabled!");
     }
 
-    protected void initializeConfiguration(Configuration config) {
+    protected void initializeConfiguration(FileConfiguration config) {
         // At migrate and setup defaults
         PermissionsEx pex = (PermissionsEx) this.getServer().getPluginManager().getPlugin("PermissionsEx");
 
-        Configuration pexConfig = pex.getConfiguration();
+        FileConfiguration pexConfig = pex.getConfig();
 
         // Flags
-        config.setProperty("enable", pexConfig.getBoolean("permissions.chat.enable", false));
-        config.setProperty("message-format", pexConfig.getString("permissions.chat.format", ChatListener.MESSAGE_FORMAT));
-        config.setProperty("global-message-format", pexConfig.getString("permissions.chat.global-format", ChatListener.GLOBAL_MESSAGE_FORMAT));
-        config.setProperty("ranged-mode", pexConfig.getBoolean("permissions.chat.force-ranged", ChatListener.RANGED_MODE));
-        config.setProperty("chat-range", pexConfig.getDouble("permissions.chat.chat-range", ChatListener.CHAT_RANGE));
-
-        config.save();
+        config.set("enable", pexConfig.getBoolean("permissions.chat.enable", false));
+        config.set("message-format", pexConfig.getString("permissions.chat.format", ChatListener.MESSAGE_FORMAT));
+        config.set("global-message-format", pexConfig.getString("permissions.chat.global-format", ChatListener.GLOBAL_MESSAGE_FORMAT));
+        config.set("ranged-mode", pexConfig.getBoolean("permissions.chat.force-ranged", ChatListener.RANGED_MODE));
+        config.set("chat-range", pexConfig.getDouble("permissions.chat.chat-range", ChatListener.CHAT_RANGE));
+        
+        pex.saveConfig();
     }
 
 }
