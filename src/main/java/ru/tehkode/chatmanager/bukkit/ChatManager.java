@@ -57,6 +57,8 @@ public class ChatManager extends JavaPlugin {
         if (config.getBoolean("enable", false)) {
             this.getServer().getPluginManager().registerEvents(listener, this);
             log.info("ChatManager enabled!");
+            // Make sure MV didn't load before we did.
+            this.listener.checkForMultiverse(this.getServer().getPluginManager().getPlugin("Multiverse-Core"));
         } else {
         	log.info("ChatManager disabled. Check config.yml!");
             this.getPluginLoader().disablePlugin(this);

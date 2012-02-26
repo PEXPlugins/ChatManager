@@ -29,6 +29,12 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerChatEvent;
+import org.bukkit.event.server.PluginEnableEvent;
+import org.bukkit.plugin.Plugin;
+
+import com.onarandombox.MultiverseCore.MultiverseCore;
+
+import ru.tehkode.chatmanager.bukkit.utils.MultiverseConnector;
 import ru.tehkode.permissions.PermissionManager;
 import ru.tehkode.permissions.PermissionUser;
 import ru.tehkode.permissions.bukkit.PermissionsEx;
@@ -55,6 +61,7 @@ public class ChatListener implements Listener {
 	protected String optionGlobalMessageFormat = "global-message-format";
 	protected String optionRangedMode = "force-ranged-mode";
 	protected String optionDisplayname = "display-name-format";
+	private MultiverseConnector multiverseConnector;
 
 	public ChatListener(FileConfiguration config) {
 		this.messageFormat = config.getString("message-format", this.messageFormat);
@@ -134,7 +141,7 @@ public class ChatListener implements Listener {
 	protected String replacePlayerPlaceholders(Player player, String format) {
 		PermissionUser user = PermissionsEx.getPermissionManager().getUser(player);
 		String worldName = player.getWorld().getName();
-		return format.replace("%prefix", this.magicify(this.colorize(user.getPrefix(worldName)))).replace("%suffix", this.magicify(this.colorize(user.getSuffix(worldName)))).replace("%world", worldName).replace("%player", player.getName());
+		return format.replace("%prefix", this.magicify(this.colorize(user.getPrefix(worldName)))).replace("%suffix", this.magicify(this.colorize(user.getSuffix(worldName)))).replace("%world", this.getWorldAlias(worldName)).replace("%player", player.getName());
 	}
 
 	protected List<Player> getLocalRecipients(Player sender, String message, double range) {
@@ -210,4 +217,38 @@ public class ChatListener implements Listener {
 
 		return chatMagicPattern.matcher(string).replaceAll("\u00A7$1");
 	}
+	
+    /**
+     * Initializes the MVConnector.
+     *
+     * @param conn The MultiverseConnector instance
+     */
+    protected void setupMultiverseConnector(MultiverseConnector conn) {
+        this.multiverseConnector = conn;
+    }
+    
+    /**
+     * Returns a colored world string provided by Multiverse
+     *
+     * @param world The world to retrieve the string about.
+     * @return A colored worldstring if the connector is present, the normal world if it is not.
+     */
+    private String getWorldAlias(String world) {
+        if (this.multiverseConnector != null) {
+            return multiverseConnector.getColoredAliasForWorld(world);
+        }
+        return world;
+    }
+    
+    @EventHandler
+    public void onPluginEnable(PluginEnableEvent event) {
+        this.checkForMultiverse(event.getPlugin());
+    }
+    
+    public void checkForMultiverse(Plugin p) {
+        if (p != null && p.getDescription().getName().equalsIgnoreCase("Multiverse-Core")) {
+            this.setupMultiverseConnector(new MultiverseConnector((MultiverseCore) p));
+            ChatManager.log.info("Multiverse 2 integration enabled!");
+        }
+    }
 }
