@@ -35,6 +35,7 @@ import org.bukkit.plugin.Plugin;
 import com.onarandombox.MultiverseCore.MultiverseCore;
 
 import ru.tehkode.chatmanager.bukkit.utils.MultiverseConnector;
+import ru.tehkode.permissions.PermissionGroup;
 import ru.tehkode.permissions.PermissionManager;
 import ru.tehkode.permissions.PermissionUser;
 import ru.tehkode.permissions.bukkit.PermissionsEx;
@@ -141,7 +142,7 @@ public class ChatListener implements Listener {
 	protected String replacePlayerPlaceholders(Player player, String format) {
 		PermissionUser user = PermissionsEx.getPermissionManager().getUser(player);
 		String worldName = player.getWorld().getName();
-		return format.replace("%prefix", this.magicify(this.colorize(user.getPrefix(worldName)))).replace("%suffix", this.magicify(this.colorize(user.getSuffix(worldName)))).replace("%world", this.getWorldAlias(worldName)).replace("%player", player.getName());
+		return format.replace("%prefix", this.magicify(this.colorize(getAllPrefixes(user, worldName)))).replace("%suffix", this.magicify(this.colorize(getAllSuffixes(user, worldName)))).replace("%world", this.getWorldAlias(worldName)).replace("%player", player.getName());
 	}
 
 	protected List<Player> getLocalRecipients(Player sender, String message, double range) {
@@ -250,5 +251,30 @@ public class ChatListener implements Listener {
             this.setupMultiverseConnector(new MultiverseConnector((MultiverseCore) p));
             ChatManager.log.info("Multiverse 2 integration enabled!");
         }
+    }
+    
+    public String getAllPrefixes(PermissionUser user, String world)
+    {
+        String prefixes = "";
+        PermissionGroup[] groups = user.getGroups(world);
+        for(PermissionGroup group: groups)
+        {
+            prefixes += group.getPrefix(world);
+        }
+        return prefixes;
+    }
+    
+    public String getAllSuffixes(PermissionUser user, String world)
+    {
+        String suffixes = "";
+        PermissionGroup[] group1 = user.getGroups(world);
+        PermissionGroup[] groups = new PermissionGroup[group1.length];
+        for(int i=0; i < group1.length; i++)
+            groups[(groups.length-1)-i] = group1[i];
+        for(PermissionGroup group: groups)
+        {
+            suffixes += group.getSuffix(world);
+        }
+        return suffixes;
     }
 }
