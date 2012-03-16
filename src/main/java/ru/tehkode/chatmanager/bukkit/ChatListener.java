@@ -60,8 +60,8 @@ public class ChatListener implements Listener {
     protected String optionGlobalMessageFormat = "global-message-format";
     protected String optionRangedMode = "force-ranged-mode";
     protected String optionDisplayname = "display-name-format";
-    protected boolean overrideMainGroup = true;
-    protected boolean reverseSuffixOrder = false;
+    protected static boolean overrideMainGroup = true;
+    protected static boolean reverseSuffixOrder = false;
     private MultiverseConnector multiverseConnector;
 
     public ChatListener(FileConfiguration config) {
@@ -70,8 +70,8 @@ public class ChatListener implements Listener {
         this.rangedMode = config.getBoolean("ranged-mode", this.rangedMode);
         this.chatRange = config.getDouble("chat-range", this.chatRange);
         this.displayNameFormat = config.getString("display-name-format", this.displayNameFormat);
-        this.overrideMainGroup = config.getBoolean("override-main-group-prefix", this.overrideMainGroup);
-        this.reverseSuffixOrder = config.getBoolean("reverse-suffix-order", this.reverseSuffixOrder);
+        overrideMainGroup = config.getBoolean("override-main-group-prefix", this.overrideMainGroup);
+        reverseSuffixOrder = config.getBoolean("reverse-suffix-order", this.reverseSuffixOrder);
     }
 
     @EventHandler
@@ -144,8 +144,8 @@ public class ChatListener implements Listener {
     protected String replacePlayerPlaceholders(Player player, String format) {
         PermissionUser user = PermissionsEx.getPermissionManager().getUser(player);
         String worldName = player.getWorld().getName();
-        String newString = format.replace("%prefix", this.magicify(this.colorize(getAllPrefixes(user, worldName))));
-        newString += newString.replace("%suffix", this.magicify(this.colorize(getAllSuffixes(user, worldName))));
+        String newString = format.replace("%prefix", getAllPrefixes(user, worldName));
+        newString += newString.replace("%suffix", getAllSuffixes(user, worldName));
         newString += newString.replace("%world", this.getWorldAlias(worldName));
         newString += newString.replace("%player", player.getName());
         try{
@@ -153,6 +153,8 @@ public class ChatListener implements Listener {
         } catch (IndexOutOfBoundsException e) {
             newString += newString.replace("%group", "");
         }
+        newString = this.colorize(newString);
+        newString = this.magicify(newString);
         return newString;
     }
 
@@ -273,13 +275,12 @@ public class ChatListener implements Listener {
      * @return All the prefixes for that player
      */
     public String getAllPrefixes(PermissionUser user, String world) {
-        String prefixes = "";
         PermissionGroup[] groups = user.getGroups(world);
         PermissionGroup main = groups[0];
         if (main == null) {
             return user.getPrefix(world);
         }
-        prefixes = user.getPrefix(world);
+        String prefixes = user.getPrefix(world);
         int i = 0;
         if (overrideMainGroup) {
             i = 1;
