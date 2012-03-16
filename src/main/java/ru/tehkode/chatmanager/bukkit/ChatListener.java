@@ -144,7 +144,16 @@ public class ChatListener implements Listener {
     protected String replacePlayerPlaceholders(Player player, String format) {
         PermissionUser user = PermissionsEx.getPermissionManager().getUser(player);
         String worldName = player.getWorld().getName();
-        return format.replace("%prefix", this.magicify(this.colorize(getAllPrefixes(user, worldName)))).replace("%suffix", this.magicify(this.colorize(getAllSuffixes(user, worldName)))).replace("%world", this.getWorldAlias(worldName)).replace("%player", player.getName()).replace("%group", user.getGroupsNames()[0]);
+        String newString = format.replace("%prefix", this.magicify(this.colorize(getAllPrefixes(user, worldName))));
+        newString += newString.replace("%suffix", this.magicify(this.colorize(getAllSuffixes(user, worldName))));
+        newString += newString.replace("%world", this.getWorldAlias(worldName));
+        newString += newString.replace("%player", player.getName());
+        try{
+            newString += newString.replace("%group", user.getGroupsNames()[0]);
+        } catch (IndexOutOfBoundsException e) {
+            newString += newString.replace("%group", "");
+        }
+        return newString;
     }
 
     protected List<Player> getLocalRecipients(Player sender, String message, double range) {
