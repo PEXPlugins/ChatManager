@@ -144,7 +144,7 @@ public class ChatListener implements Listener {
     protected String replacePlayerPlaceholders(Player player, String format) {
         PermissionUser user = PermissionsEx.getPermissionManager().getUser(player);
         String worldName = player.getWorld().getName();
-        return format.replace("%prefix", this.magicify(this.colorize(getAllPrefixes(user, worldName)))).replace("%suffix", this.magicify(this.colorize(getAllSuffixes(user, worldName)))).replace("%world", this.getWorldAlias(worldName)).replace("%player", player.getName());
+        return format.replace("%prefix", this.magicify(this.colorize(getAllPrefixes(user, worldName)))).replace("%suffix", this.magicify(this.colorize(getAllSuffixes(user, worldName)))).replace("%world", this.getWorldAlias(worldName)).replace("%player", player.getName()).replace("%group", user.getGroupsNames()[0]);
     }
 
     protected List<Player> getLocalRecipients(Player sender, String message, double range) {
