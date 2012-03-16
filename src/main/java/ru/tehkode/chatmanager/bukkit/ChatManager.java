@@ -60,7 +60,7 @@ public class ChatManager extends JavaPlugin {
             // Make sure MV didn't load before we did.
             this.listener.checkForMultiverse(this.getServer().getPluginManager().getPlugin("Multiverse-Core"));
         } else {
-        	log.info("ChatManager disabled. Check config.yml!");
+        	log.info("ChatManager is disabled, enable it in the config.yml");
             this.getPluginLoader().disablePlugin(this);
         }
 
@@ -86,6 +86,9 @@ public class ChatManager extends JavaPlugin {
         config.set("global-message-format", pexConfig.getString("permissions.chat.global-format", ChatListener.GLOBAL_MESSAGE_FORMAT));
         config.set("ranged-mode", pexConfig.getBoolean("permissions.chat.force-ranged", ChatListener.RANGED_MODE));
         config.set("chat-range", pexConfig.getDouble("permissions.chat.chat-range", ChatListener.CHAT_RANGE));
+        config.set("override-main-group-prefix", ChatListener.overrideMainGroup);
+        config.set("reverse-suffix-order", ChatListener.reverseSuffixOrder);
+        config.set("global-char", ChatListener.globalChar);
         
         pex.saveConfig();
     }

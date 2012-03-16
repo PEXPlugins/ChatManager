@@ -18,6 +18,7 @@
  */
 package ru.tehkode.chatmanager.bukkit;
 
+import com.onarandombox.MultiverseCore.MultiverseCore;
 import java.util.Calendar;
 import java.util.LinkedList;
 import java.util.List;
@@ -31,10 +32,8 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerChatEvent;
 import org.bukkit.event.server.PluginEnableEvent;
 import org.bukkit.plugin.Plugin;
-
-import com.onarandombox.MultiverseCore.MultiverseCore;
-
 import ru.tehkode.chatmanager.bukkit.utils.MultiverseConnector;
+import ru.tehkode.permissions.PermissionGroup;
 import ru.tehkode.permissions.PermissionManager;
 import ru.tehkode.permissions.PermissionUser;
 import ru.tehkode.permissions.bukkit.PermissionsEx;
@@ -44,180 +43,197 @@ import ru.tehkode.permissions.bukkit.PermissionsEx;
  * @author t3hk0d3
  */
 public class ChatListener implements Listener {
-	protected static Pattern chatColorPattern = Pattern.compile("(?i)&([0-9A-F])");
-	protected static Pattern chatMagicPattern = Pattern.compile("(?i)&([K])");
-	
-	public final static String MESSAGE_FORMAT = "<%prefix%player%suffix> %message";
-	public final static String GLOBAL_MESSAGE_FORMAT = "<%prefix%player%suffix> &e%message";
-	public final static Boolean RANGED_MODE = false;
-	public final static double CHAT_RANGE = 100d;
-	protected String messageFormat = MESSAGE_FORMAT;
-	protected String globalMessageFormat = GLOBAL_MESSAGE_FORMAT;
-	protected boolean rangedMode = RANGED_MODE;
-	protected double chatRange = CHAT_RANGE;
-	protected String displayNameFormat = "%prefix%player%suffix";
-	protected String optionChatRange = "chat-range";
-	protected String optionMessageFormat = "message-format";
-	protected String optionGlobalMessageFormat = "global-message-format";
-	protected String optionRangedMode = "force-ranged-mode";
-	protected String optionDisplayname = "display-name-format";
-	private MultiverseConnector multiverseConnector;
 
-	public ChatListener(FileConfiguration config) {
-		this.messageFormat = config.getString("message-format", this.messageFormat);
-		this.globalMessageFormat = config.getString("global-message-format", this.globalMessageFormat);
-		this.rangedMode = config.getBoolean("ranged-mode", this.rangedMode);
-		this.chatRange = config.getDouble("chat-range", this.chatRange);
-		this.displayNameFormat = config.getString("display-name-format", this.displayNameFormat);
-	}
+    protected static Pattern chatColorPattern = Pattern.compile("(?i)&([0-9A-F])");
+    protected static Pattern chatMagicPattern = Pattern.compile("(?i)&([K])");
+    public final static String MESSAGE_FORMAT = "<%prefix%player%suffix> %message";
+    public final static String GLOBAL_MESSAGE_FORMAT = "<%prefix%player%suffix> &e%message";
+    public final static Boolean RANGED_MODE = false;
+    public final static double CHAT_RANGE = 100d;
+    protected String messageFormat = MESSAGE_FORMAT;
+    protected String globalMessageFormat = GLOBAL_MESSAGE_FORMAT;
+    protected boolean rangedMode = RANGED_MODE;
+    protected double chatRange = CHAT_RANGE;
+    protected String displayNameFormat = "%prefix%player%suffix";
+    protected String optionChatRange = "chat-range";
+    protected String optionMessageFormat = "message-format";
+    protected String optionGlobalMessageFormat = "global-message-format";
+    protected String optionRangedMode = "force-ranged-mode";
+    protected String optionDisplayname = "display-name-format";
+    protected static boolean overrideMainGroup = true;
+    protected static boolean reverseSuffixOrder = false;
+    protected static String globalChar;
+    private MultiverseConnector multiverseConnector;
 
-	@EventHandler
-	public void onPlayerChat(PlayerChatEvent event) {
-		if (event.isCancelled()) {
-			return;
-		}
+    public ChatListener(FileConfiguration config) {
+        this.messageFormat = config.getString("message-format", this.messageFormat);
+        this.globalMessageFormat = config.getString("global-message-format", this.globalMessageFormat);
+        this.rangedMode = config.getBoolean("ranged-mode", this.rangedMode);
+        this.chatRange = config.getDouble("chat-range", this.chatRange);
+        this.displayNameFormat = config.getString("display-name-format", displayNameFormat);
+        overrideMainGroup = config.getBoolean("override-main-group-prefix", overrideMainGroup);
+        reverseSuffixOrder = config.getBoolean("reverse-suffix-order", reverseSuffixOrder);
+        globalChar = config.getString("global-char", globalChar);
+    }
 
-		Player player = event.getPlayer();
+    @EventHandler
+    public void onPlayerChat(PlayerChatEvent event) {
+        if (event.isCancelled()) {
+            return;
+        }
 
-		String worldName = player.getWorld().getName();
+        Player player = event.getPlayer();
 
-		PermissionUser user = PermissionsEx.getPermissionManager().getUser(player);
-		if (user == null) {
-			return;
-		}
+        String worldName = player.getWorld().getName();
 
-		String message = user.getOption(this.optionMessageFormat, worldName, messageFormat);
-		boolean localChat = user.getOptionBoolean(this.optionRangedMode, worldName, rangedMode);
+        PermissionUser user = PermissionsEx.getPermissionManager().getUser(player);
+        if (user == null) {
+            return;
+        }
 
-		String chatMessage = event.getMessage();
-		if (chatMessage.startsWith("!") && user.has("chatmanager.chat.global", worldName)) {
-			localChat = false;
-			chatMessage = chatMessage.substring(1);
+        String message = user.getOption(this.optionMessageFormat, worldName, messageFormat);
+        boolean localChat = user.getOptionBoolean(this.optionRangedMode, worldName, rangedMode);
 
-			message = user.getOption(this.optionGlobalMessageFormat, worldName, globalMessageFormat);
-		}
+        String chatMessage = event.getMessage();
+        if (chatMessage.startsWith(globalChar) && user.has("chatmanager.chat.global", worldName)) {
+            localChat = false;
+            chatMessage = chatMessage.substring(1);
 
-		message = this.colorize(message);
-		message = this.magicify(message);
+            message = user.getOption(this.optionGlobalMessageFormat, worldName, globalMessageFormat);
+        }
 
-		if (user.has("chatmanager.chat.color", worldName)) {
-			chatMessage = this.colorize(chatMessage);
-		}
-		if (user.has("chatmanager.chat.magic", worldName)) {
-			chatMessage = this.magicify(chatMessage);
-		}
+        message = this.colorize(message);
+        message = this.magicify(message);
 
-		message = message.replace("%message", "%2$s").replace("%displayname", "%1$s");
-		message = this.replacePlayerPlaceholders(player, message);
-		message = this.replaceTime(message);
+        if (user.has("chatmanager.chat.color", worldName)) {
+            chatMessage = this.colorize(chatMessage);
+        }
+        if (user.has("chatmanager.chat.magic", worldName)) {
+            chatMessage = this.magicify(chatMessage);
+        }
 
-		event.setFormat(message);
-		event.setMessage(chatMessage);
+        message = message.replace("%message", "%2$s").replace("%displayname", "%1$s");
+        message = this.replacePlayerPlaceholders(player, message);
+        message = this.replaceTime(message);
 
-		if (localChat) {
-			double range = user.getOptionDouble(this.optionChatRange, worldName, chatRange);
+        event.setFormat(message);
+        event.setMessage(chatMessage);
 
-			event.getRecipients().clear();
-			event.getRecipients().addAll(this.getLocalRecipients(player, message, range));
-		}
-	}
+        if (localChat) {
+            double range = user.getOptionDouble(this.optionChatRange, worldName, chatRange);
 
-	protected void updateDisplayNames() {
-		for (Player player : Bukkit.getServer().getOnlinePlayers()) {
-			updateDisplayName(player);
-		}
-	}
+            event.getRecipients().clear();
+            event.getRecipients().addAll(this.getLocalRecipients(player, message, range));
+        }
+    }
 
-	protected void updateDisplayName(Player player) {
-		PermissionUser user = PermissionsEx.getPermissionManager().getUser(player);
-		if (user == null) {
-			return;
-		}
+    protected void updateDisplayNames() {
+        for (Player player : Bukkit.getServer().getOnlinePlayers()) {
+            updateDisplayName(player);
+        }
+    }
 
-		String worldName = player.getWorld().getName();
-		player.setDisplayName(this.magicify(this.colorize(this.replacePlayerPlaceholders(player, user.getOption(this.optionDisplayname, worldName, this.displayNameFormat)))));
-	}
+    protected void updateDisplayName(Player player) {
+        PermissionUser user = PermissionsEx.getPermissionManager().getUser(player);
+        if (user == null) {
+            return;
+        }
 
-	protected String replacePlayerPlaceholders(Player player, String format) {
-		PermissionUser user = PermissionsEx.getPermissionManager().getUser(player);
-		String worldName = player.getWorld().getName();
-		return format.replace("%prefix", this.magicify(this.colorize(user.getPrefix(worldName)))).replace("%suffix", this.magicify(this.colorize(user.getSuffix(worldName)))).replace("%world", this.getWorldAlias(worldName)).replace("%player", player.getName());
-	}
+        String worldName = player.getWorld().getName();
+        player.setDisplayName(this.magicify(this.colorize(this.replacePlayerPlaceholders(player, user.getOption(this.optionDisplayname, worldName, this.displayNameFormat)))));
+    }
 
-	protected List<Player> getLocalRecipients(Player sender, String message, double range) {
-		Location playerLocation = sender.getLocation();
-		List<Player> recipients = new LinkedList<Player>();
-		double squaredDistance = Math.pow(range, 2);
-		PermissionManager manager = PermissionsEx.getPermissionManager();
-		for (Player recipient : Bukkit.getServer().getOnlinePlayers()) {
-			// Recipient are not from same world
-			if (!recipient.getWorld().equals(sender.getWorld())) {
-				continue;
-			}
+    protected String replacePlayerPlaceholders(Player player, String format) {
+        PermissionUser user = PermissionsEx.getPermissionManager().getUser(player);
+        String worldName = player.getWorld().getName();
+        String newString = format.replace("%prefix", getAllPrefixes(user, worldName));
+        newString += newString.replace("%suffix", getAllSuffixes(user, worldName));
+        newString += newString.replace("%world", this.getWorldAlias(worldName));
+        newString += newString.replace("%player", player.getName());
+        try{
+            newString += newString.replace("%group", user.getGroupsNames()[0]);
+        } catch (IndexOutOfBoundsException e) {
+            newString += newString.replace("%group", "");
+        }
+        newString = this.colorize(newString);
+        newString = this.magicify(newString);
+        return newString;
+    }
 
-			if (playerLocation.distanceSquared(recipient.getLocation()) > squaredDistance && !manager.has(sender, "chatmanager.override.ranged")) {
-				continue;
-			}
+    protected List<Player> getLocalRecipients(Player sender, String message, double range) {
+        Location playerLocation = sender.getLocation();
+        List<Player> recipients = new LinkedList<Player>();
+        double squaredDistance = Math.pow(range, 2);
+        PermissionManager manager = PermissionsEx.getPermissionManager();
+        for (Player recipient : Bukkit.getServer().getOnlinePlayers()) {
+            // Recipient are not from same world
+            if (!recipient.getWorld().equals(sender.getWorld())) {
+                continue;
+            }
 
-			recipients.add(recipient);
-		}
-		return recipients;
-	}
+            if (playerLocation.distanceSquared(recipient.getLocation()) > squaredDistance && !manager.has(sender, "chatmanager.override.ranged")) {
+                continue;
+            }
 
-	protected String replaceTime(String message) {
-		Calendar calendar = Calendar.getInstance();
+            recipients.add(recipient);
+        }
+        return recipients;
+    }
 
-		if (message.contains("%h")) {
-			message = message.replace("%h", String.format("%02d", calendar.get(Calendar.HOUR)));
-		}
+    protected String replaceTime(String message) {
+        Calendar calendar = Calendar.getInstance();
 
-		if (message.contains("%H")) {
-			message = message.replace("%H", String.format("%02d", calendar.get(Calendar.HOUR_OF_DAY)));
-		}
+        if (message.contains("%h")) {
+            message = message.replace("%h", String.format("%02d", calendar.get(Calendar.HOUR)));
+        }
 
-		if (message.contains("%g")) {
-			message = message.replace("%g", Integer.toString(calendar.get(Calendar.HOUR)));
-		}
+        if (message.contains("%H")) {
+            message = message.replace("%H", String.format("%02d", calendar.get(Calendar.HOUR_OF_DAY)));
+        }
 
-		if (message.contains("%G")) {
-			message = message.replace("%G", Integer.toString(calendar.get(Calendar.HOUR_OF_DAY)));
-		}
+        if (message.contains("%g")) {
+            message = message.replace("%g", Integer.toString(calendar.get(Calendar.HOUR)));
+        }
 
-		if (message.contains("%i")) {
-			message = message.replace("%i", String.format("%02d", calendar.get(Calendar.MINUTE)));
-		}
+        if (message.contains("%G")) {
+            message = message.replace("%G", Integer.toString(calendar.get(Calendar.HOUR_OF_DAY)));
+        }
 
-		if (message.contains("%s")) {
-			message = message.replace("%s", String.format("%02d", calendar.get(Calendar.SECOND)));
-		}
+        if (message.contains("%i")) {
+            message = message.replace("%i", String.format("%02d", calendar.get(Calendar.MINUTE)));
+        }
 
-		if (message.contains("%a")) {
-			message = message.replace("%a", (calendar.get(Calendar.AM_PM) == 0) ? "am" : "pm");
-		}
+        if (message.contains("%s")) {
+            message = message.replace("%s", String.format("%02d", calendar.get(Calendar.SECOND)));
+        }
 
-		if (message.contains("%A")) {
-			message = message.replace("%A", (calendar.get(Calendar.AM_PM) == 0) ? "AM" : "PM");
-		}
+        if (message.contains("%a")) {
+            message = message.replace("%a", (calendar.get(Calendar.AM_PM) == 0) ? "am" : "pm");
+        }
 
-		return message;
-	}
+        if (message.contains("%A")) {
+            message = message.replace("%A", (calendar.get(Calendar.AM_PM) == 0) ? "AM" : "PM");
+        }
 
-	protected String colorize(String string) {
-		if (string == null) {
-			return "";
-		}
+        return message;
+    }
 
-		return chatColorPattern.matcher(string).replaceAll("\u00A7$1");
-	}
+    protected String colorize(String string) {
+        if (string == null) {
+            return "";
+        }
 
-	protected String magicify(String string) {
-		if (string == null) {
-			return "";
-		}
+        return chatColorPattern.matcher(string).replaceAll("\u00A7$1");
+    }
 
-		return chatMagicPattern.matcher(string).replaceAll("\u00A7$1");
-	}
-	
+    protected String magicify(String string) {
+        if (string == null) {
+            return "";
+        }
+
+        return chatMagicPattern.matcher(string).replaceAll("\u00A7$1");
+    }
+
     /**
      * Initializes the MVConnector.
      *
@@ -226,12 +242,13 @@ public class ChatListener implements Listener {
     protected void setupMultiverseConnector(MultiverseConnector conn) {
         this.multiverseConnector = conn;
     }
-    
+
     /**
      * Returns a colored world string provided by Multiverse
      *
      * @param world The world to retrieve the string about.
-     * @return A colored worldstring if the connector is present, the normal world if it is not.
+     * @return A colored worldstring if the connector is present, the normal
+     * world if it is not.
      */
     private String getWorldAlias(String world) {
         if (this.multiverseConnector != null) {
@@ -239,16 +256,64 @@ public class ChatListener implements Listener {
         }
         return world;
     }
-    
+
     @EventHandler
     public void onPluginEnable(PluginEnableEvent event) {
         this.checkForMultiverse(event.getPlugin());
     }
-    
+
     public void checkForMultiverse(Plugin p) {
         if (p != null && p.getDescription().getName().equalsIgnoreCase("Multiverse-Core")) {
             this.setupMultiverseConnector(new MultiverseConnector((MultiverseCore) p));
             ChatManager.log.info("Multiverse 2 integration enabled!");
         }
+    }
+
+    /**
+     * Returns the string of prefixes for the player
+     *
+     * @param user The player who is talking
+     * @param world The world they are in
+     * @return All the prefixes for that player
+     */
+    public String getAllPrefixes(PermissionUser user, String world) {
+        PermissionGroup[] groups = user.getGroups(world);
+        PermissionGroup main = groups[0];
+        if (main == null) {
+            return user.getPrefix(world);
+        }
+        String prefixes = user.getPrefix(world);
+        int i = 0;
+        if (overrideMainGroup) {
+            i = 1;
+        }
+        for (; i < groups.length; i++) {
+            prefixes += groups[i].getPrefix(world);
+        }
+        return prefixes;
+    }
+
+    /**
+     * Returns the string of suffixes for the player
+     *
+     * @param user The player who is talking
+     * @param world The world they are in
+     * @return All the suffixes for that player
+     */
+    public String getAllSuffixes(PermissionUser user, String world) {
+        String suffixes = "";
+        PermissionGroup[] group1 = user.getGroups(world);
+        PermissionGroup[] groups = new PermissionGroup[group1.length];
+        if (reverseSuffixOrder) {
+            for (int i = 0; i < group1.length; i++) {
+                groups[(groups.length - 1) - i] = group1[i];
+            }
+        } else {
+            groups = group1;
+        }
+        for (PermissionGroup group : groups) {
+            suffixes += group.getSuffix(world);
+        }
+        return suffixes;
     }
 }
