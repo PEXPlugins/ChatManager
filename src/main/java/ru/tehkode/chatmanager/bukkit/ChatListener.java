@@ -62,6 +62,7 @@ public class ChatListener implements Listener {
     protected String optionDisplayname = "display-name-format";
     protected static boolean overrideMainGroup = true;
     protected static boolean reverseSuffixOrder = false;
+    protected static String globalChar;
     private MultiverseConnector multiverseConnector;
 
     public ChatListener(FileConfiguration config) {
@@ -69,9 +70,10 @@ public class ChatListener implements Listener {
         this.globalMessageFormat = config.getString("global-message-format", this.globalMessageFormat);
         this.rangedMode = config.getBoolean("ranged-mode", this.rangedMode);
         this.chatRange = config.getDouble("chat-range", this.chatRange);
-        this.displayNameFormat = config.getString("display-name-format", this.displayNameFormat);
-        overrideMainGroup = config.getBoolean("override-main-group-prefix", this.overrideMainGroup);
-        reverseSuffixOrder = config.getBoolean("reverse-suffix-order", this.reverseSuffixOrder);
+        this.displayNameFormat = config.getString("display-name-format", displayNameFormat);
+        overrideMainGroup = config.getBoolean("override-main-group-prefix", overrideMainGroup);
+        reverseSuffixOrder = config.getBoolean("reverse-suffix-order", reverseSuffixOrder);
+        globalChar = config.getString("global-char", globalChar);
     }
 
     @EventHandler
@@ -93,7 +95,7 @@ public class ChatListener implements Listener {
         boolean localChat = user.getOptionBoolean(this.optionRangedMode, worldName, rangedMode);
 
         String chatMessage = event.getMessage();
-        if (chatMessage.startsWith("!") && user.has("chatmanager.chat.global", worldName)) {
+        if (chatMessage.startsWith(globalChar) && user.has("chatmanager.chat.global", worldName)) {
             localChat = false;
             chatMessage = chatMessage.substring(1);
 
