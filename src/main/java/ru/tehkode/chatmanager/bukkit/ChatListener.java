@@ -265,6 +265,13 @@ public class ChatListener implements Listener {
         }
     }
 
+    /**
+     * Returns the string of prefixes for the player
+     *
+     * @param user The player who is talking
+     * @param world The world they are in
+     * @return All the prefixes for that player
+     */
     public String getAllPrefixes(PermissionUser user, String world) {
         String prefixes = "";
         PermissionGroup[] groups = user.getGroups(world);
@@ -283,6 +290,13 @@ public class ChatListener implements Listener {
         return prefixes;
     }
 
+    /**
+     * Returns the string of suffixes for the player
+     *
+     * @param user The player who is talking
+     * @param world The world they are in
+     * @return All the suffixes for that player
+     */
     public String getAllSuffixes(PermissionUser user, String world) {
         String suffixes = "";
         PermissionGroup[] group1 = user.getGroups(world);
