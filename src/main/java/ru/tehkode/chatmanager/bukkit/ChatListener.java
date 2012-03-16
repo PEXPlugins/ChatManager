@@ -270,11 +270,9 @@ public class ChatListener implements Listener {
         PermissionGroup[] groups = user.getGroups(world);
         PermissionGroup main = groups[0];
         if (main == null) {
-            return "";
+            return user.getPrefix(world);
         }
-        if (overrideMainGroup) {
-            prefixes = user.getPrefix(world);
-        }
+        prefixes = user.getPrefix(world);
         int i = 0;
         if (overrideMainGroup) {
             i = 1;
