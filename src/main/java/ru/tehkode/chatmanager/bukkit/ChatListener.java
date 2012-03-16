@@ -62,6 +62,7 @@ public class ChatListener implements Listener {
 	protected String optionGlobalMessageFormat = "global-message-format";
 	protected String optionRangedMode = "force-ranged-mode";
 	protected String optionDisplayname = "display-name-format";
+        protected boolean overrideMainGroup = true;
 	private MultiverseConnector multiverseConnector;
 
 	public ChatListener(FileConfiguration config) {
@@ -70,6 +71,7 @@ public class ChatListener implements Listener {
 		this.rangedMode = config.getBoolean("ranged-mode", this.rangedMode);
 		this.chatRange = config.getDouble("chat-range", this.chatRange);
 		this.displayNameFormat = config.getString("display-name-format", this.displayNameFormat);
+                this.overrideMainGroup = config.getBoolean("override-main-group-prefix", this.overrideMainGroup);
 	}
 
 	@EventHandler
