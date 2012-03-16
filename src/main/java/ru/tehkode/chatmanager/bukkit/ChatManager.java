@@ -86,6 +86,8 @@ public class ChatManager extends JavaPlugin {
         config.set("global-message-format", pexConfig.getString("permissions.chat.global-format", ChatListener.GLOBAL_MESSAGE_FORMAT));
         config.set("ranged-mode", pexConfig.getBoolean("permissions.chat.force-ranged", ChatListener.RANGED_MODE));
         config.set("chat-range", pexConfig.getDouble("permissions.chat.chat-range", ChatListener.CHAT_RANGE));
+        config.set("override-main-group-prefix", ChatListener.overrideMainGroup);
+        config.set("reverse-suffix-order", ChatListener.reverseSuffixOrder);
         
         pex.saveConfig();
     }
