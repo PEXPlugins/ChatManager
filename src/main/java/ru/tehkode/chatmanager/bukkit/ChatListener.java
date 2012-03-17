@@ -64,6 +64,7 @@ public class ChatListener implements Listener {
     protected String optionDisplayname = "display-name-format";
     protected static boolean overrideMainGroup = true;
     protected static boolean reverseSuffixOrder = false;
+    protected static String globalChar;
     private MultiverseConnector multiverseConnector;
 
     public ChatListener(FileConfiguration config) {
@@ -152,6 +153,11 @@ public class ChatListener implements Listener {
         newString += newString.replace("%suffix", getAllSuffixes(user, worldName));
         newString += newString.replace("%world", this.getWorldAlias(worldName));
         newString += newString.replace("%player", player.getName());
+        try{
+            newString += newString.replace("%group", user.getGroupsNames()[0]);
+        } catch (IndexOutOfBoundsException e) {
+            newString += newString.replace("%group", ""); 
+        }
         newString = this.colorize(newString);
         newString = this.magicify(newString);
         return newString;
