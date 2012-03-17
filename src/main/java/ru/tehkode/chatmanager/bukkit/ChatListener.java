@@ -19,6 +19,7 @@
 package ru.tehkode.chatmanager.bukkit;
 
 import com.onarandombox.MultiverseCore.MultiverseCore;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.LinkedList;
 import java.util.List;
@@ -32,6 +33,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerChatEvent;
 import org.bukkit.event.server.PluginEnableEvent;
 import org.bukkit.plugin.Plugin;
+import ru.tehkode.chatmanager.bukkit.channel.ChatManagerChannel;
 import ru.tehkode.chatmanager.bukkit.utils.MultiverseConnector;
 import ru.tehkode.permissions.PermissionGroup;
 import ru.tehkode.permissions.PermissionManager;
@@ -62,7 +64,6 @@ public class ChatListener implements Listener {
     protected String optionDisplayname = "display-name-format";
     protected static boolean overrideMainGroup = true;
     protected static boolean reverseSuffixOrder = false;
-    protected static String globalChar;
     private MultiverseConnector multiverseConnector;
 
     public ChatListener(FileConfiguration config) {
@@ -73,7 +74,6 @@ public class ChatListener implements Listener {
         this.displayNameFormat = config.getString("display-name-format", displayNameFormat);
         overrideMainGroup = config.getBoolean("override-main-group-prefix", overrideMainGroup);
         reverseSuffixOrder = config.getBoolean("reverse-suffix-order", reverseSuffixOrder);
-        globalChar = config.getString("global-char", globalChar);
     }
 
     @EventHandler
@@ -95,7 +95,7 @@ public class ChatListener implements Listener {
         boolean localChat = user.getOptionBoolean(this.optionRangedMode, worldName, rangedMode);
 
         String chatMessage = event.getMessage();
-        if (chatMessage.startsWith(globalChar) && user.has("chatmanager.chat.global", worldName)) {
+        if (chatMessage.startsWith("!") && user.has("chatmanager.chat.global", worldName)) {
             localChat = false;
             chatMessage = chatMessage.substring(1);
 
@@ -125,6 +125,8 @@ public class ChatListener implements Listener {
             event.getRecipients().clear();
             event.getRecipients().addAll(this.getLocalRecipients(player, message, range));
         }
+        
+        ChatManagerChannel.manageChannel(user, event);
     }
 
     protected void updateDisplayNames() {
@@ -150,11 +152,6 @@ public class ChatListener implements Listener {
         newString += newString.replace("%suffix", getAllSuffixes(user, worldName));
         newString += newString.replace("%world", this.getWorldAlias(worldName));
         newString += newString.replace("%player", player.getName());
-        try{
-            newString += newString.replace("%group", user.getGroupsNames()[0]);
-        } catch (IndexOutOfBoundsException e) {
-            newString += newString.replace("%group", "");
-        }
         newString = this.colorize(newString);
         newString = this.magicify(newString);
         return newString;
