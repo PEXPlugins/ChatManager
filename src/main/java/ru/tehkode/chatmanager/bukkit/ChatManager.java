@@ -19,7 +19,6 @@
 package ru.tehkode.chatmanager.bukkit;
 
 import java.util.logging.Logger;
-
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
 import ru.tehkode.permissions.bukkit.PermissionsEx;
@@ -88,7 +87,6 @@ public class ChatManager extends JavaPlugin {
         config.set("chat-range", pexConfig.getDouble("permissions.chat.chat-range", ChatListener.CHAT_RANGE));
         config.set("override-main-group-prefix", ChatListener.overrideMainGroup);
         config.set("reverse-suffix-order", ChatListener.reverseSuffixOrder);
-        config.set("global-char", ChatListener.globalChar);
         
         pex.saveConfig();
     }
