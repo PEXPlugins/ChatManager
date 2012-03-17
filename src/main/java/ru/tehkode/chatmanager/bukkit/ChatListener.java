@@ -33,7 +33,6 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerChatEvent;
 import org.bukkit.event.server.PluginEnableEvent;
 import org.bukkit.plugin.Plugin;
-import ru.tehkode.chatmanager.bukkit.channel.ChatManagerChannel;
 import ru.tehkode.chatmanager.bukkit.utils.MultiverseConnector;
 import ru.tehkode.permissions.PermissionGroup;
 import ru.tehkode.permissions.PermissionManager;
@@ -64,7 +63,6 @@ public class ChatListener implements Listener {
     protected String optionDisplayname = "display-name-format";
     protected static boolean overrideMainGroup = true;
     protected static boolean reverseSuffixOrder = false;
-    protected static String globalChar;
     private MultiverseConnector multiverseConnector;
 
     public ChatListener(FileConfiguration config) {
@@ -126,8 +124,6 @@ public class ChatListener implements Listener {
             event.getRecipients().clear();
             event.getRecipients().addAll(this.getLocalRecipients(player, message, range));
         }
-        
-        ChatManagerChannel.manageChannel(user, event);
     }
 
     protected void updateDisplayNames() {
