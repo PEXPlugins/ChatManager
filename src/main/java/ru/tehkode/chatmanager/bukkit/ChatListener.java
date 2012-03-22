@@ -46,6 +46,11 @@ import ru.tehkode.permissions.bukkit.PermissionsEx;
 public class ChatListener implements Listener {
 	protected static Pattern chatColorPattern = Pattern.compile("(?i)&([0-9A-F])");
 	protected static Pattern chatMagicPattern = Pattern.compile("(?i)&([K])");
+	protected static Pattern chatBoldPattern = Pattern.compile("(?i)&([L])");
+	protected static Pattern chatStrikethroughPattern = Pattern.compile("(?i)&([M])");
+	protected static Pattern chatUnderlinePattern = Pattern.compile("(?i)&([N])");
+	protected static Pattern chatItalicPattern = Pattern.compile("(?i)&([O])");
+	protected static Pattern chatResetPattern = Pattern.compile("(?i)&([R])");
 	
 	public final static String MESSAGE_FORMAT = "<%prefix%player%suffix> %message";
 	public final static String GLOBAL_MESSAGE_FORMAT = "<%prefix%player%suffix> &e%message";
@@ -61,6 +66,12 @@ public class ChatListener implements Listener {
 	protected String optionGlobalMessageFormat = "global-message-format";
 	protected String optionRangedMode = "force-ranged-mode";
 	protected String optionDisplayname = "display-name-format";
+	protected String permissionChatColor = "chatmanager.chat.color";
+	protected String permissionChatMagic = "chatmanager.chat.magic";
+	protected String permissionChatBold = "chatmanager.chat.bold";
+	protected String permissionChatStrikethrough = "chatmanager.chat.strikethrough";
+	protected String permissionChatUnderline = "chatmanager.chat.underline";
+	protected String permissionChatItalic = "chatmanager.chat.italic";
 	private MultiverseConnector multiverseConnector;
 
 	public ChatListener(FileConfiguration config) {
@@ -97,15 +108,9 @@ public class ChatListener implements Listener {
 			message = user.getOption(this.optionGlobalMessageFormat, worldName, globalMessageFormat);
 		}
 
-		message = this.colorize(message);
-		message = this.magicify(message);
+		message = this.translateColorCodes(message);
 
-		if (user.has("chatmanager.chat.color", worldName)) {
-			chatMessage = this.colorize(chatMessage);
-		}
-		if (user.has("chatmanager.chat.magic", worldName)) {
-			chatMessage = this.magicify(chatMessage);
-		}
+		chatMessage = this.translateColorCodes(chatMessage, user, worldName);
 
 		message = message.replace("%message", "%2$s").replace("%displayname", "%1$s");
 		message = this.replacePlayerPlaceholders(player, message);
@@ -135,13 +140,13 @@ public class ChatListener implements Listener {
 		}
 
 		String worldName = player.getWorld().getName();
-		player.setDisplayName(this.magicify(this.colorize(this.replacePlayerPlaceholders(player, user.getOption(this.optionDisplayname, worldName, this.displayNameFormat)))));
+		player.setDisplayName(this.translateColorCodes(this.replacePlayerPlaceholders(player, user.getOption(this.optionDisplayname, worldName, this.displayNameFormat))));
 	}
 
 	protected String replacePlayerPlaceholders(Player player, String format) {
 		PermissionUser user = PermissionsEx.getPermissionManager().getUser(player);
 		String worldName = player.getWorld().getName();
-		return format.replace("%prefix", this.magicify(this.colorize(user.getPrefix(worldName)))).replace("%suffix", this.magicify(this.colorize(user.getSuffix(worldName)))).replace("%world", this.getWorldAlias(worldName)).replace("%player", player.getName());
+		return format.replace("%prefix", this.translateColorCodes(user.getPrefix(worldName))).replace("%suffix", this.translateColorCodes(user.getSuffix(worldName))).replace("%world", this.getWorldAlias(worldName)).replace("%player", player.getName());
 	}
 
 	protected List<Player> getLocalRecipients(Player sender, String message, double range) {
@@ -202,22 +207,50 @@ public class ChatListener implements Listener {
 		return message;
 	}
 
-	protected String colorize(String string) {
+	protected String translateColorCodes(String string) {
 		if (string == null) {
 			return "";
 		}
 
-		return chatColorPattern.matcher(string).replaceAll("\u00A7$1");
+		String newstring = string;
+		newstring = chatColorPattern.matcher(newstring).replaceAll("\u00A7$1");
+		newstring = chatMagicPattern.matcher(newstring).replaceAll("\u00A7$1");
+		newstring = chatBoldPattern.matcher(newstring).replaceAll("\u00A7$1");
+		newstring = chatStrikethroughPattern.matcher(newstring).replaceAll("\u00A7$1");
+		newstring = chatUnderlinePattern.matcher(newstring).replaceAll("\u00A7$1");
+		newstring = chatItalicPattern.matcher(newstring).replaceAll("\u00A7$1");
+		newstring = chatResetPattern.matcher(newstring).replaceAll("\u00A7$1");
+		return newstring;
 	}
 
-	protected String magicify(String string) {
+	protected String translateColorCodes(String string, PermissionUser user, String worldName) {
 		if (string == null) {
 			return "";
 		}
 
-		return chatMagicPattern.matcher(string).replaceAll("\u00A7$1");
+		String newstring = string;
+		if (user.has(permissionChatColor, worldName)) {
+			newstring = chatColorPattern.matcher(newstring).replaceAll("\u00A7$1");
+		}
+		if (user.has(permissionChatMagic, worldName)) {
+			newstring = chatMagicPattern.matcher(newstring).replaceAll("\u00A7$1");
+		}
+		if (user.has(permissionChatBold, worldName)) {
+			newstring = chatBoldPattern.matcher(newstring).replaceAll("\u00A7$1");
+		}
+		if (user.has(permissionChatStrikethrough, worldName)) {
+			newstring = chatStrikethroughPattern.matcher(newstring).replaceAll("\u00A7$1");
+		}
+		if (user.has(permissionChatUnderline, worldName)) {
+			newstring = chatUnderlinePattern.matcher(newstring).replaceAll("\u00A7$1");
+		}
+		if (user.has(permissionChatItalic, worldName)) {
+			newstring = chatItalicPattern.matcher(newstring).replaceAll("\u00A7$1");
+		}
+		newstring = chatResetPattern.matcher(newstring).replaceAll("\u00A7$1");
+		return newstring;
 	}
-	
+
     /**
      * Initializes the MVConnector.
      *
