@@ -18,7 +18,6 @@
  */
 package ru.tehkode.chatmanager.bukkit;
 
-import com.onarandombox.MultiverseCore.MultiverseCore;
 import java.util.Calendar;
 import java.util.LinkedList;
 import java.util.List;
@@ -32,8 +31,10 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerChatEvent;
 import org.bukkit.event.server.PluginEnableEvent;
 import org.bukkit.plugin.Plugin;
+
+import com.onarandombox.MultiverseCore.MultiverseCore;
+
 import ru.tehkode.chatmanager.bukkit.utils.MultiverseConnector;
-import ru.tehkode.permissions.PermissionGroup;
 import ru.tehkode.permissions.PermissionManager;
 import ru.tehkode.permissions.PermissionUser;
 import ru.tehkode.permissions.bukkit.PermissionsEx;
@@ -71,8 +72,6 @@ public class ChatListener implements Listener {
 	protected String permissionChatStrikethrough = "chatmanager.chat.strikethrough";
 	protected String permissionChatUnderline = "chatmanager.chat.underline";
 	protected String permissionChatItalic = "chatmanager.chat.italic";
-        protected boolean overrideMainGroup = true;
-        protected boolean reverseSuffixOrder = false;
 	private MultiverseConnector multiverseConnector;
 
 	public ChatListener(FileConfiguration config) {
@@ -81,8 +80,6 @@ public class ChatListener implements Listener {
 		this.rangedMode = config.getBoolean("ranged-mode", this.rangedMode);
 		this.chatRange = config.getDouble("chat-range", this.chatRange);
 		this.displayNameFormat = config.getString("display-name-format", this.displayNameFormat);
-                this.overrideMainGroup = config.getBoolean("override-main-group-prefix", overrideMainGroup);
-                this.reverseSuffixOrder = config.getBoolean("reverse-suffix-order", reverseSuffixOrder);
 	}
 
 	@EventHandler
@@ -149,7 +146,7 @@ public class ChatListener implements Listener {
 	protected String replacePlayerPlaceholders(Player player, String format) {
 		PermissionUser user = PermissionsEx.getPermissionManager().getUser(player);
 		String worldName = player.getWorld().getName();
-		return format.replace("%prefix", this.translateColorCodes(this.getAllPrefixes(user, worldName))).replace("%suffix", this.translateColorCodes(this.getAllSuffixes(user, worldName))).replace("%world", this.getWorldAlias(worldName)).replace("%player", player.getName());
+		return format.replace("%prefix", this.translateColorCodes(user.getPrefix(worldName))).replace("%suffix", this.translateColorCodes(user.getSuffix(worldName))).replace("%world", this.getWorldAlias(worldName)).replace("%player", player.getName());
 	}
 
 	protected List<Player> getLocalRecipients(Player sender, String message, double range) {
@@ -286,53 +283,5 @@ public class ChatListener implements Listener {
             this.setupMultiverseConnector(new MultiverseConnector((MultiverseCore) p));
             ChatManager.log.info("Multiverse 2 integration enabled!");
         }
-    }
-    
-    /**
-     * Returns the string of prefixes for the player
-     *
-     * @param user The player who is talking
-     * @param world The world they are in
-     * @return All the prefixes for that player
-     */
-    public String getAllPrefixes(PermissionUser user, String world) {
-        PermissionGroup[] groups = user.getGroups(world);
-        PermissionGroup main = groups[0];
-        if (main == null) {
-            return user.getPrefix(world);
-        }
-        String prefixes = user.getPrefix(world);
-        int i = 0;
-        if (overrideMainGroup) {
-            i = 1;
-        }
-        for (; i < groups.length; i++) {
-            prefixes += groups[i].getPrefix(world);
-        }
-        return prefixes;
-    }
-
-    /**
-     * Returns the string of suffixes for the player
-     *
-     * @param user The player who is talking
-     * @param world The world they are in
-     * @return All the suffixes for that player
-     */
-    public String getAllSuffixes(PermissionUser user, String world) {
-        String suffixes = "";
-        PermissionGroup[] group1 = user.getGroups(world);
-        PermissionGroup[] groups = new PermissionGroup[group1.length];
-        if (reverseSuffixOrder) {
-            for (int i = 0; i < group1.length; i++) {
-                groups[(groups.length - 1) - i] = group1[i];
-            }
-        } else {
-            groups = group1;
-        }
-        for (PermissionGroup group : groups) {
-            suffixes += group.getSuffix(world);
-        }
-        return suffixes;
     }
 }
