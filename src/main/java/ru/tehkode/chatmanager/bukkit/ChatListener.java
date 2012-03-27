@@ -35,6 +35,7 @@ import org.bukkit.plugin.Plugin;
 import com.onarandombox.MultiverseCore.MultiverseCore;
 
 import ru.tehkode.chatmanager.bukkit.utils.MultiverseConnector;
+import ru.tehkode.permissions.PermissionGroup;
 import ru.tehkode.permissions.PermissionManager;
 import ru.tehkode.permissions.PermissionUser;
 import ru.tehkode.permissions.bukkit.PermissionsEx;
@@ -146,6 +147,13 @@ public class ChatListener implements Listener {
 	protected String replacePlayerPlaceholders(Player player, String format) {
 		PermissionUser user = PermissionsEx.getPermissionManager().getUser(player);
 		String worldName = player.getWorld().getName();
+                try {
+                    PermissionGroup[] groups = user.getGroups();
+                    String group = groups[0].getName();
+                    format = format.replace("%group", group);
+                } catch (IndexOutOfBoundsException e) {
+                    format = format.replace("%group", "");
+                }
 		return format.replace("%prefix", this.translateColorCodes(user.getPrefix(worldName))).replace("%suffix", this.translateColorCodes(user.getSuffix(worldName))).replace("%world", this.getWorldAlias(worldName)).replace("%player", player.getName());
 	}
 
