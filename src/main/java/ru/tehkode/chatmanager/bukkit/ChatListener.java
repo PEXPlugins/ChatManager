@@ -81,6 +81,8 @@ public class ChatListener implements Listener {
         protected boolean prefixBufferAfter = false;
         protected boolean suffixBufferBefore = false;
         protected boolean suffixBufferAfter = false;
+        protected boolean prefixBufferMiddle = true;
+        protected boolean suffixBufferMiddle = true;
 	private MultiverseConnector multiverseConnector;
 
 	public ChatListener(FileConfiguration config) {
@@ -94,8 +96,10 @@ public class ChatListener implements Listener {
                 this.overrideAllPrefix = config.getBoolean("override.prefixes", this.overrideAllPrefix);
                 this.overrideAllSuffix = config.getBoolean("override.suffixes", this.overrideAllSuffix);
                 this.prefixBufferBefore = config.getBoolean("buffer.prefix.before", prefixBufferBefore);
+                this.prefixBufferMiddle = config.getBoolean("buffer.prefix.middle", prefixBufferMiddle);
                 this.prefixBufferAfter = config.getBoolean("buffer.prefix.after", prefixBufferAfter);
                 this.suffixBufferBefore = config.getBoolean("buffer.suffix.before", suffixBufferBefore);
+                this.suffixBufferMiddle = config.getBoolean("buffer.suffix.middle", suffixBufferMiddle);
                 this.suffixBufferAfter = config.getBoolean("buffer.suffix.after", suffixBufferAfter);
 	}
 
@@ -327,6 +331,10 @@ public class ChatListener implements Listener {
             String prefix = groups[i].getPrefix(world);
             if ((prefix != null) && (!prefix.equalsIgnoreCase("null"))) {
                 prefixes = prefixes + prefix;
+                if(prefixBufferMiddle && i < groups.length - 1)
+                {
+                    prefixes += " ";
+                }
             }
         }
         
@@ -363,10 +371,15 @@ public class ChatListener implements Listener {
         } else {
             suffixes = temp;
         }
-        for (PermissionGroup group : groups) {
+        for (int i=0; i < groups.length; i++) {
+            PermissionGroup group = groups[i];
             String suffix = group.getSuffix(world);
             if ((suffix != null) && (!suffix.equalsIgnoreCase("null"))) {
                 suffixes = suffixes + suffix;
+                if(suffixBufferMiddle && i < groups.length - 1)
+                {
+                    suffix += " ";
+                }
             }
         }
         if(suffixes.trim().equalsIgnoreCase(""))
