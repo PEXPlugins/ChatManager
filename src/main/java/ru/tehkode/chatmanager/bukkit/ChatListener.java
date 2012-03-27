@@ -77,6 +77,10 @@ public class ChatListener implements Listener {
         protected boolean reverseSuffixOrder = false;
         protected boolean overrideAllPrefix = false;
         protected boolean overrideAllSuffix = false;
+        protected boolean prefixBufferBefore = false;
+        protected boolean prefixBufferAfter = false;
+        protected boolean suffixBufferBefore = false;
+        protected boolean suffixBufferAfter = false;
 	private MultiverseConnector multiverseConnector;
 
 	public ChatListener(FileConfiguration config) {
@@ -89,6 +93,10 @@ public class ChatListener implements Listener {
                 this.reverseSuffixOrder = config.getBoolean("override.suffix-order", this.reverseSuffixOrder);
                 this.overrideAllPrefix = config.getBoolean("override.prefixes", this.overrideAllPrefix);
                 this.overrideAllSuffix = config.getBoolean("override.suffixes", this.overrideAllSuffix);
+                this.prefixBufferBefore = config.getBoolean("buffer.prefix.before", prefixBufferBefore);
+                this.prefixBufferAfter = config.getBoolean("buffer.prefix.after", prefixBufferAfter);
+                this.suffixBufferBefore = config.getBoolean("buffer.suffix.before", suffixBufferBefore);
+                this.suffixBufferAfter = config.getBoolean("buffer.suffix.after", suffixBufferAfter);
 	}
 
 	@EventHandler
@@ -321,6 +329,13 @@ public class ChatListener implements Listener {
                 prefixes = prefixes + prefix;
             }
         }
+        
+        if(prefixes.trim().equalsIgnoreCase(""))
+            return "";
+        if(prefixBufferBefore)
+            prefixes = " " + prefixes;
+        if(prefixBufferAfter)
+            prefixes += " ";
         return prefixes;
     }
 
@@ -354,6 +369,12 @@ public class ChatListener implements Listener {
                 suffixes = suffixes + suffix;
             }
         }
+        if(suffixes.trim().equalsIgnoreCase(""))
+            return "";
+        if(suffixBufferBefore)
+            suffixes = " " + suffixes;
+        if(suffixBufferAfter)
+            suffixes += " ";
         return suffixes;
     }
 }
