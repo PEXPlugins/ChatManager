@@ -21,12 +21,14 @@ package ru.tehkode.chatmanager.bukkit;
 import java.util.Calendar;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.ArrayList;
 import java.util.regex.Pattern;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerChatEvent;
 import org.bukkit.event.server.PluginEnableEvent;
@@ -36,6 +38,7 @@ import com.onarandombox.MultiverseCore.MultiverseCore;
 
 import ru.tehkode.chatmanager.bukkit.utils.MultiverseConnector;
 import ru.tehkode.permissions.PermissionManager;
+import ru.tehkode.permissions.PermissionGroup;
 import ru.tehkode.permissions.PermissionUser;
 import ru.tehkode.permissions.bukkit.PermissionsEx;
 
@@ -51,7 +54,7 @@ public class ChatListener implements Listener {
 	protected static Pattern chatUnderlinePattern = Pattern.compile("(?i)&([N])");
 	protected static Pattern chatItalicPattern = Pattern.compile("(?i)&([O])");
 	protected static Pattern chatResetPattern = Pattern.compile("(?i)&([R])");
-	
+
 	public final static String MESSAGE_FORMAT = "<%prefix%player%suffix> %message";
 	public final static String GLOBAL_MESSAGE_FORMAT = "<%prefix%player%suffix> &e%message";
 	public final static Boolean RANGED_MODE = false;
@@ -72,6 +75,8 @@ public class ChatListener implements Listener {
 	protected String permissionChatStrikethrough = "chatmanager.chat.strikethrough";
 	protected String permissionChatUnderline = "chatmanager.chat.underline";
 	protected String permissionChatItalic = "chatmanager.chat.italic";
+        protected boolean prefixBuffer = false; //determines if prefixes should have spaces
+        protected boolean suffixBuffer = false; //determines if suffixes should have spaces
 	private MultiverseConnector multiverseConnector;
 
 	public ChatListener(FileConfiguration config) {
@@ -80,9 +85,11 @@ public class ChatListener implements Listener {
 		this.rangedMode = config.getBoolean("ranged-mode", this.rangedMode);
 		this.chatRange = config.getDouble("chat-range", this.chatRange);
 		this.displayNameFormat = config.getString("display-name-format", this.displayNameFormat);
+                this.prefixBuffer = config.getBoolean("buffer.prefix");
+                this.suffixBuffer = config.getBoolean("buffer.suffix");
 	}
 
-	@EventHandler
+	@EventHandler(priority = EventPriority.MONITOR) // so that this will be the last thing to occur
 	public void onPlayerChat(PlayerChatEvent event) {
 		if (event.isCancelled()) {
 			return;
@@ -144,9 +151,17 @@ public class ChatListener implements Listener {
 	}
 
 	protected String replacePlayerPlaceholders(Player player, String format) {
+                //cleaned this up so it was more readable and moved color code formatting to the end
+                //so that it is done at once instead of multiple times
 		PermissionUser user = PermissionsEx.getPermissionManager().getUser(player);
-		String worldName = player.getWorld().getName();
-		return format.replace("%prefix", this.translateColorCodes(user.getPrefix(worldName))).replace("%suffix", this.translateColorCodes(user.getSuffix(worldName))).replace("%world", this.getWorldAlias(worldName)).replace("%player", player.getName());
+                String worldName = player.getWorld().getName();
+                format = format.replace("%prefix", getPrefixes(user, worldName));
+                format = format.replace("%suffix", getSuffixes(user, worldName));
+                format = format.replace("%world", getWorldAlias(worldName));
+                format = format.replace("%player", player.getName());
+                format = translateColorCodes(format);
+
+                return format;
 	}
 
 	protected List<Player> getLocalRecipients(Player sender, String message, double range) {
@@ -259,7 +274,7 @@ public class ChatListener implements Listener {
     protected void setupMultiverseConnector(MultiverseConnector conn) {
         this.multiverseConnector = conn;
     }
-    
+
     /**
      * Returns a colored world string provided by Multiverse
      *
@@ -272,16 +287,174 @@ public class ChatListener implements Listener {
         }
         return world;
     }
-    
+
     @EventHandler
     public void onPluginEnable(PluginEnableEvent event) {
         this.checkForMultiverse(event.getPlugin());
     }
-    
+
     public void checkForMultiverse(Plugin p) {
         if (p != null && p.getDescription().getName().equalsIgnoreCase("Multiverse-Core")) {
             this.setupMultiverseConnector(new MultiverseConnector((MultiverseCore) p));
             ChatManager.log.info("Multiverse 2 integration enabled!");
         }
+    }
+
+    /**
+     * Handles the prefixes. This uses permissions and group-defined prefixes.
+     * Permissions will have the final say which the group is the default
+     *
+     * @param user The name of the player
+     * @param world The world the player is in
+     * @return The prefix for the player
+     */
+    public String getPrefixes(PermissionUser user, String world) {
+        String personalPrefix = user.getOwnPrefix();
+        PermissionGroup[] allGroups = PermissionsEx.getPermissionManager().getGroups();
+        String finalPrefix = "";
+
+        //this sets the player's personal prefix to be the prefix
+        //which will be the final one if no perms are set
+        if (personalPrefix != null && !personalPrefix.trim().equalsIgnoreCase("")) {
+            finalPrefix = personalPrefix;
+        }
+
+        //this loops though a player's own permissions to see if they have any prefixes defined
+        //which is added to the list so the prefix for that group is added
+        //CURRENTLY USELESS UNTIL THE PERMISSIONUSER GETS THIS METHOD OVERRIDDEN >_>
+        //will work on a solution
+        List<String> specialGroups = new ArrayList<String>();
+        for (String perm : user.getOwnPermissions(world)) {
+            if (perm.startsWith("prefix.")) {
+                String testGroup = perm.substring(8).trim().toLowerCase();
+                specialGroups.add(testGroup);
+            }
+        }
+
+        //adds in the user's groups first in order they are in
+        PermissionGroup[] userGroups = user.getGroups();
+        for (PermissionGroup group : userGroups) {
+            if (!group.has("*")) { //this is used to make sure all perms does not cause all suffixes
+                String prefix = group.getOwnPrefix();
+                if (prefix != null && !prefix.equals("null")) { //just to make sure there is in fact a prefix to add
+                    if (prefixBuffer) {
+                        if (finalPrefix.equalsIgnoreCase("")) { //in case there is no prefixes beforehand, prevents a ghost space
+                            finalPrefix = prefix;
+                        } else {
+                            finalPrefix += " " + prefix;
+                        }
+                    } else {
+                        finalPrefix += prefix;
+
+                    }
+                }
+            }
+        }
+
+        //checks the remaining groups to ensure all prefixes are added
+        for (PermissionGroup group : allGroups) {
+            if (!user.inGroup(group)) { //this is used to make the groups they are already in are not re-added
+                if (user.has("prefix." + group.getName().toLowerCase())) {
+                    String prefix = group.getOwnPrefix();
+                    if (prefix != null && !prefix.equals("null")) {
+                        if (prefixBuffer) {
+                            if (finalPrefix.equalsIgnoreCase("")) {
+                                finalPrefix = prefix;
+                            } else {
+                                finalPrefix += " " + prefix;
+                            }
+                        } else {
+                            finalPrefix += prefix;
+                        }
+                    }
+                }
+            }
+        }
+
+        //if there are no prefixes found perm-wise, this will set the group default prefix
+        if (finalPrefix.equalsIgnoreCase("")) {
+            finalPrefix = user.getGroups()[0].getOwnPrefix();
+        }
+
+        //if there is no prefix so far, just sets it to "" to remove the %prefix and not add anything
+        if (finalPrefix == null || finalPrefix.equalsIgnoreCase("null")) {
+            finalPrefix = "";
+        }
+        return finalPrefix;
+    }
+
+    /**
+     * Handles the suffixes. This uses permissions and group-defined suffixes.
+     * Permissions will have the final say which the group is the default
+     *
+     * @param user The name of the player
+     * @param world The world the player is in
+     * @return The modified message
+     */
+    public String getSuffixes(PermissionUser user, String world) {
+        //check prefix method for comments as they aer the same here
+        String personalSuffix = user.getOwnSuffix();
+        PermissionGroup[] allGroups = PermissionsEx.getPermissionManager().getGroups();
+        String finalSuffix = "";
+
+        if (personalSuffix != null && !personalSuffix.trim().equalsIgnoreCase("")) {
+            finalSuffix = personalSuffix;
+        }
+
+        List<String> specialGroups = new ArrayList<String>();
+        for (String perm : user.getOwnPermissions(world)) {
+            if (perm.startsWith("suffix.")) {
+                String testGroup = perm.substring(8).trim().toLowerCase();
+                specialGroups.add(testGroup);
+            }
+        }
+
+        PermissionGroup[] userGroups = user.getGroups();
+        for (PermissionGroup group : userGroups) {
+            if (!group.has("*")) {
+                String suffix = group.getOwnSuffix();
+                if (suffix != null && !suffix.equals("null")) {
+                    if (suffixBuffer) {
+                        if (finalSuffix.equalsIgnoreCase("")) {
+                            finalSuffix = suffix;
+                        } else {
+                            finalSuffix += " " + suffix;
+                        }
+                    } else {
+                        finalSuffix += suffix;
+
+                    }
+                }
+            }
+        }
+
+        for (PermissionGroup group : allGroups) {
+            if (!user.inGroup(group)) {
+                if (user.has("suffix." + group.getName().toLowerCase())) {
+                    String suffix = group.getOwnSuffix();
+                    if (suffix != null && !suffix.equals("null")) {
+                        if (suffixBuffer) {
+                            if (finalSuffix.equalsIgnoreCase("")) {
+                                finalSuffix = suffix;
+                            } else {
+                                finalSuffix += " " + suffix;
+                            }
+                        } else {
+                            finalSuffix += suffix;
+
+                        }
+                    }
+                }
+            }
+        }
+
+        if (finalSuffix.equalsIgnoreCase("")) {
+            finalSuffix = user.getGroups()[0].getOwnSuffix();
+        }
+
+        if (finalSuffix == null || finalSuffix.equalsIgnoreCase("null")) {
+            finalSuffix = "";
+        }
+        return finalSuffix;
     }
 }
