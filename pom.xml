@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>ru.tehkode</groupId>
     <artifactId>ChatManager</artifactId>
-    <version>1.18</version>
+    <version>1.19.3</version>
     <name>ChatManager</name>
     <url>https://github.com/t3hk0d3/ChatManager</url>
     <issueManagement>
@@ -52,6 +52,18 @@
             <groupId>ru.tehkode</groupId>
             <artifactId>PermissionsEx</artifactId>
             <version>1.18</version>
+        </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit-dep</artifactId>
+            <version>4.10</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-all</artifactId>
+            <version>1.9.0</version>
+            <scope>test</scope>
         </dependency>
     </dependencies>
     <repositories>
