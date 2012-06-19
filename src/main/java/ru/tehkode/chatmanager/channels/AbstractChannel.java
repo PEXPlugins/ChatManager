@@ -1,7 +1,5 @@
 package ru.tehkode.chatmanager.channels;
 
-import org.bukkit.entity.Player;
-
 public abstract class AbstractChannel implements Channel {
 
     protected String name;

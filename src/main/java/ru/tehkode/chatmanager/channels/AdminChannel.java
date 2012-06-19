@@ -20,6 +20,7 @@ public class AdminChannel extends GlobalChannel {
     public Set<Player> getSubscribers(Player sender) {
         Set<Player> recv = super.getSubscribers(sender);
 
+        // Filter recipients
         for (Player player : recv) {
             if (!player.hasPermission(Server.BROADCAST_CHANNEL_ADMINISTRATIVE)){
                 recv.remove(player);
