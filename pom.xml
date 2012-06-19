@@ -53,6 +53,15 @@
             <artifactId>PermissionsEx</artifactId>
             <version>1.19.3</version>
         </dependency>
+        <!-- Multiverse-Core Dependency -->
+        <dependency>
+            <groupId>com.onarandombox.multiversecore</groupId>
+            <artifactId>Multiverse-Core</artifactId>
+            <version>2.4</version>
+            <type>jar</type>
+            <scope>compile</scope>
+        </dependency>
+        <!-- Multiverse-Core Dependency -->
         <dependency>
             <groupId>com.google.collections</groupId>
             <artifactId>google-collections</artifactId>
@@ -77,6 +86,12 @@
             <id>bukkit-repo</id>
             <url>http://repo.bukkit.org/content/groups/public</url>
         </repository>
+        <!-- Repo for Multiverse-Core Dependency -->
+        <repository>
+            <id>OnARandomBox</id>
+            <url>http://repo.onarandombox.com/content/groups/public</url>
+        </repository>
+        <!-- Repo for Multiverse-Core Dependency -->
     </repositories>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
