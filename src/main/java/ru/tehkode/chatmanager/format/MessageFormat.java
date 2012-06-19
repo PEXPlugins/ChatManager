@@ -1,8 +1,6 @@
 package ru.tehkode.chatmanager.format;
 
-import org.bukkit.entity.Player;
 import ru.tehkode.chatmanager.Message;
-import ru.tehkode.chatmanager.channels.Channel;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -12,14 +10,24 @@ import java.util.regex.Pattern;
 public class MessageFormat {
     protected static Pattern placeholderPattern = Pattern.compile("\\%([a-zA-Z_0-9]+)(?:\\[([^\\]]+)\\])?");
     
-    protected final Object[] compliedFormat;
+    protected final Object[] compiledFormat;
 
     protected MessageFormat(Object[] compliedFormat) {
-        this.compliedFormat = compliedFormat;
+        this.compiledFormat = compliedFormat;
     }
     
-    public void format(Message message) {
+    public String format(Message message) {
+        StringBuilder builder = new StringBuilder();
+        
+        for(Object piece : compiledFormat) {
+            if (piece instanceof PlaceholderBinding) {
+                piece = ((PlaceholderBinding)piece).call(message);
+            }
 
+            builder.append(piece.toString());
+        }
+
+        return builder.toString();
     }
     
     public static MessageFormat compile(String format, PlaceholderCollection placeholders) {
