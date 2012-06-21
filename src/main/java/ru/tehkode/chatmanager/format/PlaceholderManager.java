@@ -1,6 +1,7 @@
 package ru.tehkode.chatmanager.format;
 
 import ru.tehkode.chatmanager.Message;
+import ru.tehkode.chatmanager.placeholders.BasicPlaceholders;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -9,6 +10,16 @@ import java.util.Set;
 public class PlaceholderManager implements PlaceholderCollection {
 
     protected Map<String, Placeholder> placeholders = new HashMap<String, Placeholder>();
+
+    public PlaceholderManager() {
+        this.registerPlaceholder(new BasicPlaceholders());
+    }
+
+    public PlaceholderManager(Map<String, Placeholder> placeholders) {
+        this();
+
+        this.placeholders.putAll(placeholders);
+    }
 
     @Override
     public String run(String name, String arg, Message message) {

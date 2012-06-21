@@ -18,11 +18,12 @@
  */
 package ru.tehkode.chatmanager.bukkit;
 
-import java.util.logging.Logger;
-
-import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
-import ru.tehkode.permissions.bukkit.PermissionsEx;
+import ru.tehkode.chatmanager.ChatManager;
+
+import java.io.File;
+import java.util.logging.Logger;
 
 /**
  *
@@ -31,63 +32,35 @@ import ru.tehkode.permissions.bukkit.PermissionsEx;
 public class ChatManagerPlugin extends JavaPlugin {
 
     protected static Logger log;
-    protected ChatListener listener;
+    protected ChatManager manager;
+
+    @Override
+    public void onLoad() {
+        this.log = this.getLogger();
+    }
 
     @Override
     public void onEnable() {
-    	log = this.getLogger();
-    	
-        // At first check PEX existence
-        try {
-            PermissionsEx.getPermissionManager();
-        } catch (Throwable e) {
-            log.severe("PermissionsEx not found, disabling");
-            this.getPluginLoader().disablePlugin(this);
-            return;
-        }
+        manager = new ChatManager(this.getServer());
 
-        FileConfiguration config = this.getConfig();
+        // load channels
+        manager.loadChannels(YamlConfiguration.loadConfiguration(new File(this.getDataFolder(), "channels.yml")));
+        manager.loadSpeakers(YamlConfiguration.loadConfiguration(new File(this.getDataFolder(), "speakers.yml")));
 
-        if (config.get("enable") == null) { // Migrate
-            this.initializeConfiguration(config);
-        }
-
-        this.listener = new ChatListener(config);
-
-        if (config.getBoolean("enable", false)) {
-            this.getServer().getPluginManager().registerEvents(listener, this);
-            log.info("ChatManagerPlugin enabled!");
-            // Make sure MV didn't load before we did.
-            this.listener.checkForMultiverse(this.getServer().getPluginManager().getPlugin("Multiverse-Core"));
-        } else {
-        	log.info("ChatManagerPlugin disabled. Check config.yml!");
-            this.getPluginLoader().disablePlugin(this);
-        }
-
-        this.saveConfig();
+        //
+        this.getServer().getPluginManager().registerEvents(manager, this);
+        log.info("ChatManager enabled!");
     }
 
     @Override
     public void onDisable() {
-        this.listener = null;
+        manager = null;
+
         
-        log.info("ChatManagerPlugin disabled!");
+        log.info("ChatManager disabled!");
     }
-
-    protected void initializeConfiguration(FileConfiguration config) {
-        // At migrate and setup defaults
-        PermissionsEx pex = (PermissionsEx) this.getServer().getPluginManager().getPlugin("PermissionsEx");
-
-        FileConfiguration pexConfig = pex.getConfig();
-
-        // Flags
-        config.set("enable", pexConfig.getBoolean("permissions.chat.enable", false));
-        config.set("message-format", pexConfig.getString("permissions.chat.format", ChatListener.MESSAGE_FORMAT));
-        config.set("global-message-format", pexConfig.getString("permissions.chat.global-format", ChatListener.GLOBAL_MESSAGE_FORMAT));
-        config.set("ranged-mode", pexConfig.getBoolean("permissions.chat.force-ranged", ChatListener.RANGED_MODE));
-        config.set("chat-rangeSquared", pexConfig.getDouble("permissions.chat.chat-rangeSquared", ChatListener.CHAT_RANGE));
-        
-        pex.saveConfig();
+    
+    public static void debug(String message) {
+        log.severe("[DEBUG] " + message);
     }
-
 }

@@ -3,9 +3,10 @@ package ru.tehkode.chatmanager.channels;
 import ru.tehkode.chatmanager.Message;
 import ru.tehkode.chatmanager.Speaker;
 import ru.tehkode.chatmanager.format.MessageFormat;
-import ru.tehkode.chatmanager.format.SimpleMessageFormat;
 
 public interface Channel {
+
+    public final static String DEFAULT_FORMAT = "<%player> %message";
     
     public String getName();
     
@@ -17,7 +18,7 @@ public interface Channel {
 
     public MessageFormat getMessageFormat();
 
-    public void setMessageFormat(SimpleMessageFormat format);
+    public void setMessageFormat(MessageFormat format);
 
     public String getSelector();
 

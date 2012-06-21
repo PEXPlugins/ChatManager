@@ -1,8 +1,10 @@
 package ru.tehkode.chatmanager.placeholders;
 
+import org.bukkit.entity.Player;
 import ru.tehkode.chatmanager.Message;
 import ru.tehkode.chatmanager.Speaker;
 import ru.tehkode.chatmanager.channels.Channel;
+import ru.tehkode.chatmanager.channels.ManageableChannel;
 import ru.tehkode.chatmanager.format.AbstractPlaceholders;
 import ru.tehkode.chatmanager.utils.ChatUtils;
 
@@ -10,6 +12,22 @@ import java.util.regex.Matcher;
 
 public class BasicPlaceholders extends AbstractPlaceholders {
 
+    @PlaceholderMethod("player")
+    public String player(String arg, Message message) {
+        Player player = message.getSender().getPlayer();
+
+        if (arg == null || "displayname".equals(arg)) {
+            return "%1$s"; // required for proper message formatting
+        } else if ("name".equals(arg)) {
+            return player.getName();
+        } else if ("world".equals(arg)) {
+            return player.getWorld().getName();
+        } else if ("health".equals(arg)) {
+            return (int) (((float) player.getHealth() / player.getMaxHealth()) * 100) + "%";
+        }
+
+        return null;
+    }
 
     @PlaceholderMethod("message")
     public String message(String arg, Message message) {
@@ -53,6 +71,14 @@ public class BasicPlaceholders extends AbstractPlaceholders {
             return message.getChannel().getTitle();
         } else if ("name".equals(arg)) {
             return message.getChannel().getName();
+        } else if ("owner".equals(arg)) {
+            if (message.getChannel() instanceof ManageableChannel) {
+                ManageableChannel channel = (ManageableChannel)message.getChannel();
+
+                if (channel.hasOwner()){
+                    return channel.getOwner().getName();
+                }
+            }
         }
 
         // add channel related stuff here

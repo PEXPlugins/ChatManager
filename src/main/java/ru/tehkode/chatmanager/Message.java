@@ -1,8 +1,9 @@
 package ru.tehkode.chatmanager;
 
-import org.bukkit.entity.Player;
 import ru.tehkode.chatmanager.channels.Channel;
 import ru.tehkode.chatmanager.format.MessageFormat;
+
+import java.util.Calendar;
 
 public interface Message {
 
@@ -19,4 +20,6 @@ public interface Message {
     MessageFormat getFormat();
 
     void setFormat(MessageFormat format);
+
+    Calendar getDate();
 }

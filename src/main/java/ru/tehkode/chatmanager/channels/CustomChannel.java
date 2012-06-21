@@ -6,6 +6,7 @@ import com.google.common.collect.Maps;
 import org.bukkit.configuration.ConfigurationSection;
 import ru.tehkode.chatmanager.ChatManager;
 import ru.tehkode.chatmanager.Speaker;
+import ru.tehkode.chatmanager.format.MessageFormat;
 import ru.tehkode.chatmanager.format.SimpleMessageFormat;
 
 import javax.annotation.Nullable;
@@ -77,8 +78,6 @@ public class CustomChannel extends AbstractChannel implements ManageableChannel 
     public boolean isSubscriber(Speaker speaker) {
         return subscribers.containsKey(speaker);
     }
-
-
 
     @Override
     public Speaker getOwner() {

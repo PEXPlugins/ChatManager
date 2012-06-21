@@ -5,40 +5,111 @@ import com.google.common.collect.Collections2;
 import org.bukkit.ChatColor;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.Server;
+import org.bukkit.World;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerChatEvent;
-import ru.tehkode.chatmanager.channels.Channel;
+import ru.tehkode.chatmanager.channels.*;
 import ru.tehkode.chatmanager.format.MessageFormat;
 import ru.tehkode.chatmanager.format.PlaceholderManager;
+import ru.tehkode.chatmanager.format.SimpleMessageFormat;
 
 import javax.annotation.Nullable;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 public class ChatManager implements Listener {
 
-    protected Server server;
+    protected final Server server;
 
-    protected Channel defaultChannel;
+    protected final Map<String, Channel> channels = new HashMap<String, Channel>();
 
-    protected MessageFormat defaultFormat;
+    protected final Map<World, Channel> defaultChannels = new HashMap<World, Channel>();
 
-    protected Map<String, Channel> channels = new HashMap<String, Channel>();
+    protected final Map<String, MessageFormat> defaultFormats = new HashMap<String, MessageFormat>();
 
-    protected Map<String, Speaker> speakers = new HashMap<String, Speaker>();
+    protected final Map<String, Speaker> speakers = new HashMap<String, Speaker>();
 
-    protected PlaceholderManager placeholders = new PlaceholderManager();
+    protected final PlaceholderManager placeholders = new PlaceholderManager();
 
     public ChatManager(Server server) {
         this.server = server;
+
+        // default channels
+        this.addChannel(new GlobalChannel(this));
+        this.addChannel(new RangedChannel(this));
+
+        this.addChannel(new AdminChannel(this));
     }
 
     public PlaceholderManager getPlaceholders() {
         return this.placeholders;
+    }
+
+    public void loadConfig(ConfigurationSection config) {
+        this.setDefaultFormat(SimpleMessageFormat.compile(config.getString("message-format", Channel.DEFAULT_FORMAT), this.placeholders));
+
+        if (config.isConfigurationSection("message-formats")) {
+            ConfigurationSection formatsSection = config.getConfigurationSection("message-formats");
+            
+            for (String channelType : formatsSection.getKeys(false)) {
+                if (!formatsSection.isString(channelType)){
+                    continue;
+                }
+
+                MessageFormat format = SimpleMessageFormat.compile(formatsSection.getString(channelType), this.placeholders);
+
+                this.setDefaultFormat(format, channelType);
+            }
+        }
+
+        if (config.isConfigurationSection("channels")) {
+            loadChannels(config.getConfigurationSection("channels"));
+        }
+
+        if (config.isConfigurationSection("speakers")) {
+            loadSpeakers(config.getConfigurationSection("speakers"));
+        }
+    }
+
+    public void loadChannels(ConfigurationSection config) {
+        for (String name : config.getKeys(false)) {
+            if (!config.isConfigurationSection(name)) {
+                continue;
+            }
+
+            this.addChannel(new CustomChannel(this, name, config.getConfigurationSection(name)));
+        }
+    }
+
+    public void loadSpeakers(ConfigurationSection config) {
+        for (String name : config.getKeys(false)) {
+            if (!config.isConfigurationSection(name)) {
+                return;
+            }
+
+            Speaker speaker = this.getSpeaker(name);
+            ConfigurationSection settings = config.getConfigurationSection(name);
+
+            // default channel
+            if (settings.isString("defaultChannel")) {
+                speaker.setDefaultChannel(this.getChannel(settings.getString("defaultChannel")));
+            }
+
+            // load muted state
+            speaker.setMuted(settings.getBoolean("muted", false));
+
+            // load ignore list
+            if (settings.isList("ignore")) {
+                List<String> ignoreList = settings.getStringList("ignore");
+
+                for (String ignored : ignoreList) {
+                    speaker.addIgnore(this.getSpeaker(ignored));
+                }
+            }
+        }
     }
 
     public Speaker getSpeaker(OfflinePlayer player) {
@@ -73,7 +144,11 @@ public class ChatManager implements Listener {
     }
 
     public Channel getDefaultChannel() {
-        return defaultChannel;
+        return defaultChannels.get(null);
+    }
+
+    public Channel getDefaultChannel(World world) {
+        return defaultChannels.get(world);
     }
 
     public Channel getChannel(String name) {
@@ -102,14 +177,42 @@ public class ChatManager implements Listener {
     }
 
     public MessageFormat getDefaultFormat() {
-        return defaultFormat;
+        return defaultFormats.get(null);
+    }
+
+    public MessageFormat getDefaultFormat(String channelType) {
+        return defaultFormats.get(channelType.toLowerCase());
+    }
+    
+    public MessageFormat getDefaultFormat(Class<? extends Channel> channelClass) {
+        return defaultFormats.get(channelClassToString(channelClass));
     }
 
     public void setDefaultFormat(MessageFormat defaultFormat) {
-        this.defaultFormat = defaultFormat;
+        this.defaultFormats.put(null, defaultFormat);
+    }
+    
+    public void setDefaultFormat(MessageFormat format, Class<? extends Channel> channelClass) {
+        this.defaultFormats.put(channelClassToString(channelClass), format);
     }
 
-    @EventHandler
+    public void setDefaultFormat(MessageFormat defaultFormat, String type) {
+        this.defaultFormats.put(type, defaultFormat);
+    }
+    
+    protected String channelClassToString(Class<? extends Channel> channelClass) {
+        String type = channelClass.getSimpleName();
+
+        int suffix = type.lastIndexOf("Channel");
+        if(suffix > 0) { // cutoff "Channel"
+            type = type.substring(0, suffix);
+        }
+
+        return type.toLowerCase();
+    }
+
+
+    @EventHandler(priority = EventPriority.MONITOR)
     public void onPlayerChat(PlayerChatEvent event) {
         Speaker speaker = this.getSpeaker(event.getPlayer());
 
@@ -128,7 +231,7 @@ public class ChatManager implements Listener {
         // Find recipients
         Set<Player> recipients = event.getRecipients();
         recipients.clear();
-        
+
         for (Speaker receiver : channel.getSubscribers(message)) {
             if (!receiver.isOnline() || receiver.isIgnore(speaker)) {
                 continue;

@@ -6,7 +6,6 @@ import ru.tehkode.chatmanager.ChatManager;
 import ru.tehkode.chatmanager.Message;
 import ru.tehkode.chatmanager.Speaker;
 import ru.tehkode.chatmanager.format.MessageFormat;
-import ru.tehkode.chatmanager.format.SimpleMessageFormat;
 
 import javax.annotation.Nullable;
 import java.util.HashSet;
@@ -17,7 +16,7 @@ public abstract class AbstractChannel implements Channel {
     protected final ChatManager manager;
     protected final String name;
 
-    protected SimpleMessageFormat format;
+    protected MessageFormat format;
     
     private Set<Speaker> muted = new HashSet<Speaker>();
 
@@ -71,7 +70,7 @@ public abstract class AbstractChannel implements Channel {
     }
 
     @Override
-    public void setMessageFormat(SimpleMessageFormat format) {
+    public void setMessageFormat(MessageFormat format) {
         this.format = format;
     }
 
