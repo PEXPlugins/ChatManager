@@ -28,7 +28,7 @@ import ru.tehkode.permissions.bukkit.PermissionsEx;
  *
  * @author t3hk0d3
  */
-public class ChatManager extends JavaPlugin {
+public class ChatManagerPlugin extends JavaPlugin {
 
     protected static Logger log;
     protected ChatListener listener;
@@ -56,11 +56,11 @@ public class ChatManager extends JavaPlugin {
 
         if (config.getBoolean("enable", false)) {
             this.getServer().getPluginManager().registerEvents(listener, this);
-            log.info("ChatManager enabled!");
+            log.info("ChatManagerPlugin enabled!");
             // Make sure MV didn't load before we did.
             this.listener.checkForMultiverse(this.getServer().getPluginManager().getPlugin("Multiverse-Core"));
         } else {
-        	log.info("ChatManager disabled. Check config.yml!");
+        	log.info("ChatManagerPlugin disabled. Check config.yml!");
             this.getPluginLoader().disablePlugin(this);
         }
 
@@ -71,7 +71,7 @@ public class ChatManager extends JavaPlugin {
     public void onDisable() {
         this.listener = null;
         
-        log.info("ChatManager disabled!");
+        log.info("ChatManagerPlugin disabled!");
     }
 
     protected void initializeConfiguration(FileConfiguration config) {
@@ -85,7 +85,7 @@ public class ChatManager extends JavaPlugin {
         config.set("message-format", pexConfig.getString("permissions.chat.format", ChatListener.MESSAGE_FORMAT));
         config.set("global-message-format", pexConfig.getString("permissions.chat.global-format", ChatListener.GLOBAL_MESSAGE_FORMAT));
         config.set("ranged-mode", pexConfig.getBoolean("permissions.chat.force-ranged", ChatListener.RANGED_MODE));
-        config.set("chat-range", pexConfig.getDouble("permissions.chat.chat-range", ChatListener.CHAT_RANGE));
+        config.set("chat-rangeSquared", pexConfig.getDouble("permissions.chat.chat-rangeSquared", ChatListener.CHAT_RANGE));
         
         pex.saveConfig();
     }

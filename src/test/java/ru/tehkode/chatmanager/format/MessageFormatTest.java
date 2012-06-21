@@ -1,9 +1,9 @@
 package ru.tehkode.chatmanager.format;
 
-import org.bukkit.entity.Player;
 import org.junit.Before;
 import org.junit.Test;
 import ru.tehkode.chatmanager.Message;
+import ru.tehkode.chatmanager.Speaker;
 import ru.tehkode.chatmanager.channels.GlobalChannel;
 import ru.tehkode.chatmanager.placeholders.BasicPlaceholders;
 import ru.tehkode.chatmanager.placeholders.PlayerPlaceholder;
@@ -15,30 +15,38 @@ public class MessageFormatTest {
 
     PlaceholderManager manager = new PlaceholderManager();
 
-    Player mockSender;
+    Speaker mockSender;
     Message message;
+
+    MessageFormat format;
 
     @Before
     public void setup() {
         manager.registerPlaceholder("player", new PlayerPlaceholder());
         manager.registerPlaceholder(new BasicPlaceholders());
 
-        mockSender = mock(Player.class);
+        format = SimpleMessageFormat.compile("<%player> %message", manager);
+
+        mockSender = mock(Speaker.class);
         message = mock(Message.class);
 
         when(mockSender.getName()).thenReturn("testPlayer");
         when(message.getSender()).thenReturn(mockSender);
-        when(message.getChannel()).thenReturn(new GlobalChannel());
+        when(message.getChannel()).thenReturn(new GlobalChannel(null));
     }
 
     @Test
     public void testCompiling() {
-        MessageFormat format = MessageFormat.compile("<%player> %message", this.manager);
+        when(message.getText()).thenReturn("this is test &fmessage");
 
-        when(message.getMessage()).thenReturn("this is test &fmessage");
-        
-        format.format(message);
+        System.out.println("Format: " + format);
+        System.out.println("Result: " + format.format(message));
 
     }
 
+
+    @Test
+    public void testFormatting() {
+
+    }
 }

@@ -5,9 +5,12 @@ import ru.tehkode.chatmanager.channels.Channel;
 import ru.tehkode.chatmanager.format.MessageFormat;
 
 public interface Message {
-    String getMessage();
 
-    Player getSender();
+    String getText();
+
+    void setText(String message);
+
+    Speaker getSender();
 
     Channel getChannel();
 

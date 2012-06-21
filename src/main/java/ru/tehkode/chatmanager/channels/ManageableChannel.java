@@ -1,10 +1,21 @@
 package ru.tehkode.chatmanager.channels;
 
-import org.bukkit.entity.Player;
+import ru.tehkode.chatmanager.Speaker;
 
 public interface ManageableChannel extends Channel{
 
-    public void addSubscriber(Player subscriber);
+    public Iterable<Speaker> getSubscribers();
 
-    public void removeSubscriber(Player player);
+    public void addSubscriber(Speaker subscriber);
+
+    public void removeSubscriber(Speaker player);
+    
+
+
+    public Speaker getOwner();
+
+    public void setOwner(Speaker owner);
+
+    public boolean hasOwner();
+
 }

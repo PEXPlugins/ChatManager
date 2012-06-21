@@ -1,25 +1,29 @@
 package ru.tehkode.chatmanager.channels;
 
+import org.bukkit.Server;
 import org.bukkit.entity.Player;
+import ru.tehkode.chatmanager.ChatManager;
+import ru.tehkode.chatmanager.Message;
+import ru.tehkode.chatmanager.Speaker;
 import ru.tehkode.chatmanager.channels.AbstractChannel;
 
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
-public class GlobalChannel extends AbstractChannel {
+public final class GlobalChannel extends AbstractChannel {
 
-    public GlobalChannel() {
-        super("global");
-    }
-
-    public GlobalChannel(String name) {
-        super(name);
+    public GlobalChannel(ChatManager manager) {
+        super(manager, "global");
     }
 
     @Override
-    public Set<Player> getSubscribers(Player sender) {
-        return new HashSet<Player>(Arrays.asList(sender.getServer().getOnlinePlayers()));
+    public boolean isSubscriber(Speaker speaker) {
+        return speaker.hasPermission(Server.BROADCAST_CHANNEL_USERS);
     }
 
+    @Override
+    public String getSelector() {
+        return "!";
+    }
 }

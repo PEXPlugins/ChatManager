@@ -61,7 +61,7 @@ public class ChatListener implements Listener {
 	protected boolean rangedMode = RANGED_MODE;
 	protected double chatRange = CHAT_RANGE;
 	protected String displayNameFormat = "%prefix%player%suffix";
-	protected String optionChatRange = "chat-range";
+	protected String optionChatRange = "chat-rangeSquared";
 	protected String optionMessageFormat = "message-format";
 	protected String optionGlobalMessageFormat = "global-message-format";
 	protected String optionRangedMode = "force-ranged-mode";
@@ -78,7 +78,7 @@ public class ChatListener implements Listener {
 		this.messageFormat = config.getString("message-format", this.messageFormat);
 		this.globalMessageFormat = config.getString("global-message-format", this.globalMessageFormat);
 		this.rangedMode = config.getBoolean("ranged-mode", this.rangedMode);
-		this.chatRange = config.getDouble("chat-range", this.chatRange);
+		this.chatRange = config.getDouble("chat-rangeSquared", this.chatRange);
 		this.displayNameFormat = config.getString("display-name-format", this.displayNameFormat);
 	}
 
@@ -281,7 +281,7 @@ public class ChatListener implements Listener {
     public void checkForMultiverse(Plugin p) {
         if (p != null && p.getDescription().getName().equalsIgnoreCase("Multiverse-Core")) {
             this.setupMultiverseConnector(new MultiverseConnector((MultiverseCore) p));
-            ChatManager.log.info("Multiverse 2 integration enabled!");
+            ChatManagerPlugin.log.info("Multiverse 2 integration enabled!");
         }
     }
 }

@@ -3,30 +3,26 @@ package ru.tehkode.chatmanager.channels;
 
 import org.bukkit.Server;
 import org.bukkit.entity.Player;
+import ru.tehkode.chatmanager.ChatManager;
+import ru.tehkode.chatmanager.Message;
+import ru.tehkode.chatmanager.Speaker;
 
+import java.util.HashSet;
 import java.util.Set;
 
-public class AdminChannel extends GlobalChannel {
+public final class AdminChannel extends AbstractChannel {
 
-    public AdminChannel() {
-        super("admin");
-    }
-
-    public AdminChannel(String name) {
-        super(name);
+    public AdminChannel(ChatManager manager) {
+        super(manager, "admin");
     }
 
     @Override
-    public Set<Player> getSubscribers(Player sender) {
-        Set<Player> recv = super.getSubscribers(sender);
+    public boolean isSubscriber(Speaker speaker) {
+        return speaker.hasPermission(Server.BROADCAST_CHANNEL_ADMINISTRATIVE);
+    }
 
-        // Filter recipients
-        for (Player player : recv) {
-            if (!player.hasPermission(Server.BROADCAST_CHANNEL_ADMINISTRATIVE)){
-                recv.remove(player);
-            }
-        }
-
-        return recv;
+    @Override
+    public String getSelector() {
+        return "$";
     }
 }

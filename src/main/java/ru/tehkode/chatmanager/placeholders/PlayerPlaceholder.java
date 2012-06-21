@@ -9,16 +9,16 @@ public class PlayerPlaceholder implements Placeholder {
 
     @Override
     public String run(String name, String arg, Message message) {
-        Player player = message.getSender();
+        Player player = message.getSender().getPlayer();
 
-        if(arg == null || "displayname".equals(arg)) {
-            return player.getDisplayName();
+        if (arg == null || "displayname".equals(arg)) {
+            return "%1$s"; // required for proper message formatting
         } else if ("name".equals(arg)) {
             return player.getName();
         } else if ("world".equals(arg)) {
             return player.getWorld().getName();
         } else if ("health".equals(arg)) {
-            return (int)(((float)player.getHealth()/player.getMaxHealth())*100) + "%";
+            return (int) (((float) player.getHealth() / player.getMaxHealth()) * 100) + "%";
         }
 
         return null;

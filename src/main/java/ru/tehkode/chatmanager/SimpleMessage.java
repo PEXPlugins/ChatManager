@@ -1,30 +1,39 @@
 package ru.tehkode.chatmanager;
 
 import org.bukkit.entity.Player;
+import org.bukkit.event.player.PlayerChatEvent;
 import ru.tehkode.chatmanager.channels.Channel;
 import ru.tehkode.chatmanager.format.MessageFormat;
+import ru.tehkode.chatmanager.utils.ChatUtils;
+
+import java.util.regex.Matcher;
 
 public class SimpleMessage implements Message {
     // Basic properties
-    protected final Player sender;
-    protected final String message;
+    protected final Speaker sender;
+    protected String message;
 
     // Advanced properties
     protected MessageFormat format;
     protected Channel channel;
 
-    public SimpleMessage(Player sender, String message) {
+    public SimpleMessage(final Speaker sender, final String message) {
         this.sender = sender;
         this.message = message;
     }
 
     @Override
-    public String getMessage() {
-        return message;
+    public String getText() {
+        return this.message;
     }
 
+    public void setText(String message) {
+        this.message = message;
+    }
+
+
     @Override
-    public Player getSender() {
+    public Speaker getSender() {
         return sender;
     }
 

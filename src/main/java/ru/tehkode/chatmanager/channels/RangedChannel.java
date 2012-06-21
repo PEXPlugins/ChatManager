@@ -1,39 +1,55 @@
 package ru.tehkode.chatmanager.channels;
 
-import org.bukkit.World;
-import org.bukkit.entity.Player;
+import org.bukkit.Location;
+import ru.tehkode.chatmanager.ChatManager;
+import ru.tehkode.chatmanager.Message;
+import ru.tehkode.chatmanager.Speaker;
 
-import java.util.Set;
+public class RangedChannel extends AbstractChannel {
 
-public class RangedChannel extends GlobalChannel {
+    protected int rangeSquared = 1000;
 
-    protected int range = 100;
+    public RangedChannel(ChatManager manager){
+        this(manager, "ranged", 100);
+    }
 
-    public RangedChannel(int range) {
-        this("ranged", range);
+    public RangedChannel(ChatManager manager, int range) {
+        this(manager, "ranged", range);
     }
     
-    public RangedChannel(String name, int range) {
-        super(name);
+    public RangedChannel(ChatManager manager, String name, int range) {
+        super(manager, name);
 
-        this.range = range;
+        this.setRange(range);
+    }
+
+    public void setRange(int range) {
+        this.rangeSquared = range * range;
+    }
+
+    public int getRange() {
+        return (int)Math.sqrt(rangeSquared);
     }
 
     @Override
-    public Set<Player> getSubscribers(Player sender) {
-        World senderWorld = sender.getWorld();
+    public boolean isSubscriber(Speaker speaker) {
+        return true;
+    }
 
-        // squared range for faster distance computation
-        double maxDistance = this.range * this.range;
-        
-        Set<Player> recipients = super.getSubscribers(sender);
-
-        for (Player recipient : recipients) {
-            if (senderWorld != recipient.getWorld() || sender.getLocation().distanceSquared(recipient.getLocation()) > maxDistance) {
-                recipients.remove(recipient);
-            }
+    @Override
+    protected boolean applySender(Message message, Speaker receiver) {
+        if (!receiver.isOnline()){
+             return false;
         }
 
-        return recipients;
+        Location target = receiver.getPlayer().getLocation();
+        Location source = message.getSender().getPlayer().getLocation();
+
+        return this.isSubscriber(receiver) && source.distanceSquared(target) <= rangeSquared;
+    }
+
+    @Override
+    public String getSelector() {
+        return "@";
     }
 }

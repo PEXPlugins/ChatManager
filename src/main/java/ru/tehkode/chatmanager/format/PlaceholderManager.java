@@ -7,7 +7,7 @@ import java.util.Map;
 import java.util.Set;
 
 public class PlaceholderManager implements PlaceholderCollection {
-    
+
     protected Map<String, Placeholder> placeholders = new HashMap<String, Placeholder>();
 
     @Override

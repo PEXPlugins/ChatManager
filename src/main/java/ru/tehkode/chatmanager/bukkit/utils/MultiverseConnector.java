@@ -4,7 +4,7 @@ import com.onarandombox.MultiverseCore.MultiverseCore;
 import com.onarandombox.MultiverseCore.api.MultiverseWorld;
 
 /**
- * Non-Intrusive Connector class. This allows users to continue freely using ChatManager without having MV installed.
+ * Non-Intrusive Connector class. This allows users to continue freely using ChatManagerPlugin without having MV installed.
  */
 public class MultiverseConnector {
     private MultiverseCore plugin;
