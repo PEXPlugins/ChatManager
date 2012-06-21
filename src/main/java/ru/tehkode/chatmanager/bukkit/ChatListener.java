@@ -336,7 +336,7 @@ public class ChatListener implements Listener {
         for (PermissionGroup group : userGroups) {
             if (!group.has("*")) { //this is used to make sure all perms does not cause all suffixes
                 String prefix = group.getOwnPrefix();
-                if (prefix != null && !prefix.equals("null")) { //just to make sure there is in fact a prefix to add
+                if (prefix != null && !prefix.isEmpty()) { //just to make sure there is in fact a prefix to add
                     if (prefixBuffer) {
                         if (finalPrefix.equalsIgnoreCase("")) { //in case there is no prefixes beforehand, prevents a ghost space
                             finalPrefix = prefix;
@@ -356,7 +356,7 @@ public class ChatListener implements Listener {
             if (!user.inGroup(group)) { //this is used to make the groups they are already in are not re-added
                 if (user.has("prefix." + group.getName().toLowerCase())) {
                     String prefix = group.getOwnPrefix();
-                    if (prefix != null && !prefix.equals("null")) {
+                    if (prefix != null && !prefix.isEmpty()) {
                         if (prefixBuffer) {
                             if (finalPrefix.equalsIgnoreCase("")) {
                                 finalPrefix = prefix;
@@ -377,7 +377,7 @@ public class ChatListener implements Listener {
         }
 
         //if there is no prefix so far, just sets it to "" to remove the %prefix and not add anything
-        if (finalPrefix == null || finalPrefix.equalsIgnoreCase("null")) {
+        if (finalPrefix == null || finalPrefix.isEmpty()) {
             finalPrefix = "";
         }
         return finalPrefix;
@@ -413,7 +413,7 @@ public class ChatListener implements Listener {
         for (PermissionGroup group : userGroups) {
             if (!group.has("*")) {
                 String suffix = group.getOwnSuffix();
-                if (suffix != null && !suffix.equals("null")) {
+                if (suffix != null && !suffix.isEmpty()) {
                     if (suffixBuffer) {
                         if (finalSuffix.equalsIgnoreCase("")) {
                             finalSuffix = suffix;
@@ -432,7 +432,7 @@ public class ChatListener implements Listener {
             if (!user.inGroup(group)) {
                 if (user.has("suffix." + group.getName().toLowerCase())) {
                     String suffix = group.getOwnSuffix();
-                    if (suffix != null && !suffix.equals("null")) {
+                    if (suffix != null && !suffix.isEmpty()) {
                         if (suffixBuffer) {
                             if (finalSuffix.equalsIgnoreCase("")) {
                                 finalSuffix = suffix;
@@ -452,7 +452,7 @@ public class ChatListener implements Listener {
             finalSuffix = user.getGroups()[0].getOwnSuffix();
         }
 
-        if (finalSuffix == null || finalSuffix.equalsIgnoreCase("null")) {
+        if (finalSuffix == null || finalSuffix.isEmpty()) {
             finalSuffix = "";
         }
         return finalSuffix;
