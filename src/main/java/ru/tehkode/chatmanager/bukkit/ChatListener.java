@@ -315,7 +315,7 @@ public class ChatListener implements Listener {
 
         //this sets the player's personal prefix to be the prefix
         //which will be the final one if no perms are set
-        if (personalPrefix != null && !personalPrefix.trim().equalsIgnoreCase("")) {
+        if (personalPrefix.isEmpty()) {
             finalPrefix = personalPrefix;
         }
 
@@ -338,7 +338,7 @@ public class ChatListener implements Listener {
                 String prefix = group.getOwnPrefix();
                 if (prefix != null && !prefix.isEmpty()) { //just to make sure there is in fact a prefix to add
                     if (prefixBuffer) {
-                        if (finalPrefix.equalsIgnoreCase("")) { //in case there is no prefixes beforehand, prevents a ghost space
+                        if (finalPrefix.isEmpty()) { //in case there is no prefixes beforehand, prevents a ghost space
                             finalPrefix = prefix;
                         } else {
                             finalPrefix += " " + prefix;
@@ -358,7 +358,7 @@ public class ChatListener implements Listener {
                     String prefix = group.getOwnPrefix();
                     if (prefix != null && !prefix.isEmpty()) {
                         if (prefixBuffer) {
-                            if (finalPrefix.equalsIgnoreCase("")) {
+                            if (finalPrefix.isEmpty()) {
                                 finalPrefix = prefix;
                             } else {
                                 finalPrefix += " " + prefix;
@@ -372,7 +372,7 @@ public class ChatListener implements Listener {
         }
 
         //if there are no prefixes found perm-wise, this will set the group default prefix
-        if (finalPrefix.equalsIgnoreCase("")) {
+        if (finalPrefix.isEmpty()) {
             finalPrefix = user.getGroups()[0].getOwnPrefix();
         }
 
@@ -397,7 +397,7 @@ public class ChatListener implements Listener {
         PermissionGroup[] allGroups = PermissionsEx.getPermissionManager().getGroups();
         String finalSuffix = "";
 
-        if (personalSuffix != null && !personalSuffix.trim().equalsIgnoreCase("")) {
+        if (personalSuffix != null && !personalSuffix.isEmpty()) {
             finalSuffix = personalSuffix;
         }
 
@@ -415,7 +415,7 @@ public class ChatListener implements Listener {
                 String suffix = group.getOwnSuffix();
                 if (suffix != null && !suffix.isEmpty()) {
                     if (suffixBuffer) {
-                        if (finalSuffix.equalsIgnoreCase("")) {
+                        if (finalSuffix.isEmpty()) {
                             finalSuffix = suffix;
                         } else {
                             finalSuffix += " " + suffix;
@@ -434,7 +434,7 @@ public class ChatListener implements Listener {
                     String suffix = group.getOwnSuffix();
                     if (suffix != null && !suffix.isEmpty()) {
                         if (suffixBuffer) {
-                            if (finalSuffix.equalsIgnoreCase("")) {
+                            if (finalSuffix.isEmpty()) {
                                 finalSuffix = suffix;
                             } else {
                                 finalSuffix += " " + suffix;
@@ -448,7 +448,7 @@ public class ChatListener implements Listener {
             }
         }
 
-        if (finalSuffix.equalsIgnoreCase("")) {
+        if (finalSuffix.isEmpty()) {
             finalSuffix = user.getGroups()[0].getOwnSuffix();
         }
 
