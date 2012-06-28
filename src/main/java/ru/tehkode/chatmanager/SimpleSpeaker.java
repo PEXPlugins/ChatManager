@@ -7,6 +7,7 @@ import org.bukkit.permissions.Permission;
 import org.bukkit.permissions.PermissionAttachment;
 import org.bukkit.permissions.PermissionAttachmentInfo;
 import org.bukkit.plugin.Plugin;
+import ru.tehkode.chatmanager.bukkit.ChatManagerPlugin;
 import ru.tehkode.chatmanager.channels.Channel;
 import ru.tehkode.chatmanager.channels.ManageableChannel;
 
@@ -34,7 +35,7 @@ public class SimpleSpeaker implements Speaker {
     }
 
     public SimpleSpeaker(final ChatManager manager, final Server server, final OfflinePlayer player) {
-        this(manager,  server, player.getName());
+        this(manager, server, player.getName());
     }
 
     @Override
@@ -64,7 +65,7 @@ public class SimpleSpeaker implements Speaker {
 
     @Override
     public Channel getDefaultChannel() {
-        return this.defaultChannel != null ? this.defaultChannel : manager.getDefaultChannel();
+        return this.defaultChannel != null ? this.defaultChannel : manager.getDefaultChannel(this.isOnline() ? this.getPlayer().getWorld() : null);
     }
 
     @Override
@@ -201,5 +202,10 @@ public class SimpleSpeaker implements Speaker {
     @Override
     public void setOp(boolean b) {
         this.server.getOfflinePlayer(this.getName()).setOp(b);
+    }
+
+    @Override
+    public String toString() {
+        return "SimpleSpeaker{name=" + this.getName() + ", online=" + this.isOnline() + "}";
     }
 }

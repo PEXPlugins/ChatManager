@@ -14,11 +14,15 @@ import java.util.*;
 
 public class CustomChannel extends AbstractChannel implements ManageableChannel {
 
+    public final static MessageFormat DEFAULT_FORMAT = SimpleMessageFormat.compile("&7[#%channel]&f <%player> %message");
+
     protected String title;
 
     protected Speaker owner;
 
     protected Map<Speaker, Boolean> subscribers = new HashMap<Speaker, Boolean>();
+    
+    protected boolean isPrivate = false;
 
     public CustomChannel(ChatManager manager, String name) {
         super(manager, name);
@@ -34,7 +38,7 @@ public class CustomChannel extends AbstractChannel implements ManageableChannel 
 
     @Override
     public String getTitle() {
-        return this.title;
+        return this.title != null ? this.title : super.getTitle();
     }
 
     @Override
@@ -50,6 +54,14 @@ public class CustomChannel extends AbstractChannel implements ManageableChannel 
     @Override
     public void removeSubscriber(Speaker subscriber) {
         this.subscribers.remove(subscriber);
+    }
+
+    public boolean isPrivate() {
+        return isPrivate;
+    }
+
+    public void setPrivate(boolean aPrivate) {
+        isPrivate = aPrivate;
     }
 
     @Override
@@ -95,16 +107,16 @@ public class CustomChannel extends AbstractChannel implements ManageableChannel 
     }
 
     protected void readConfig(ConfigurationSection config) {
-        if (config.isString("title")) {
-            this.title = config.getString("title");
-        }
+        this.title = config.getString("title");
+
+        this.setPrivate(config.getBoolean("private", this.isPrivate));
 
         if (config.isString("owner")) {
             this.owner = manager.getSpeaker(config.getString("owner"));
         }
 
         if (config.isString("format")) {
-            this.setMessageFormat(SimpleMessageFormat.compile(config.getString("format"), manager.getPlaceholders()));
+            this.setMessageFormat(SimpleMessageFormat.compile(config.getString("format")));
         }
 
         if (config.isConfigurationSection("subscribers")) {

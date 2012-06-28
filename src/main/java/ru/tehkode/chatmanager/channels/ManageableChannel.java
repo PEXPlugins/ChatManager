@@ -18,4 +18,7 @@ public interface ManageableChannel extends Channel{
 
     public boolean hasOwner();
 
+    public boolean isPrivate();
+
+    public void setPrivate(boolean isPrivate);
 }

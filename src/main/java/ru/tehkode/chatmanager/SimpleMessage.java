@@ -62,4 +62,9 @@ public class SimpleMessage implements Message {
     public void setFormat(MessageFormat format) {
         this.format = format;
     }
+
+    @Override
+    public String toString() {
+        return "SimpleMessage{sender=" + this.sender + ", channel=" + this.channel + ", format=" + this.format + " message=" + this.message + "}";
+    }
 }

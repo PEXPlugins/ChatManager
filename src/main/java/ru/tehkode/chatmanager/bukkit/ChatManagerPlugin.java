@@ -44,6 +44,7 @@ public class ChatManagerPlugin extends JavaPlugin {
         manager = new ChatManager(this.getServer());
 
         // load channels
+        manager.loadConfig(this.getConfig());
         manager.loadChannels(YamlConfiguration.loadConfiguration(new File(this.getDataFolder(), "channels.yml")));
         manager.loadSpeakers(YamlConfiguration.loadConfiguration(new File(this.getDataFolder(), "speakers.yml")));
 
@@ -60,7 +61,22 @@ public class ChatManagerPlugin extends JavaPlugin {
         log.info("ChatManager disabled!");
     }
     
-    public static void debug(String message) {
-        log.severe("[DEBUG] " + message);
+    public static void warning(Object... message) {
+        log.warning(compile(message));
+    }
+    
+    public static void debug(Object... message) {
+        log.severe(compile("[DEBUG] ", message));
+    }
+    
+    private static String compile(Object... message) {
+        StringBuilder builder = new StringBuilder();
+        for (Object part : message) {
+            if(part instanceof Object[]) {
+                part = compile((Object[])part);
+            }
+            builder.append(part);
+        }
+        return builder.toString();
     }
 }

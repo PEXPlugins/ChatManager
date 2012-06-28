@@ -17,7 +17,7 @@ public abstract class AbstractChannel implements Channel {
     protected final String name;
 
     protected MessageFormat format;
-    
+
     private Set<Speaker> muted = new HashSet<Speaker>();
 
     public AbstractChannel(ChatManager manager, String name) {
@@ -74,7 +74,6 @@ public abstract class AbstractChannel implements Channel {
         this.format = format;
     }
 
-
     @Override
     public String getSelector() {
         return "#" + this.name;
@@ -83,5 +82,10 @@ public abstract class AbstractChannel implements Channel {
     // Override method
     protected boolean applySender(Message message, Speaker receiver) {
         return this.isSubscriber(receiver);
+    }
+
+    @Override
+    public String toString() {
+        return this.getClass().getSimpleName() + "{name=" + this.name + ", format=" + this.format + "}";
     }
 }

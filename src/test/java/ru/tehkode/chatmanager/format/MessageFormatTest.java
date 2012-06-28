@@ -1,15 +1,16 @@
 package ru.tehkode.chatmanager.format;
 
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import ru.tehkode.chatmanager.Message;
 import ru.tehkode.chatmanager.Speaker;
 import ru.tehkode.chatmanager.channels.GlobalChannel;
 import ru.tehkode.chatmanager.placeholders.BasicPlaceholders;
-import ru.tehkode.chatmanager.placeholders.PlayerPlaceholder;
 
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.verify;
 
 public class MessageFormatTest {
 
@@ -18,14 +19,9 @@ public class MessageFormatTest {
     Speaker mockSender;
     Message message;
 
-    MessageFormat format;
-
     @Before
     public void setup() {
-        manager.registerPlaceholder("player", new PlayerPlaceholder());
         manager.registerPlaceholder(new BasicPlaceholders());
-
-        format = SimpleMessageFormat.compile("<%player> %message", manager);
 
         mockSender = mock(Speaker.class);
         message = mock(Message.class);
@@ -37,16 +33,20 @@ public class MessageFormatTest {
 
     @Test
     public void testCompiling() {
-        when(message.getText()).thenReturn("this is test &fmessage");
+        MessageFormat format = SimpleMessageFormat.compile("<%player> %message");
 
-        System.out.println("Format: " + format);
-        System.out.println("Result: " + format.format(message));
+        Assert.assertEquals("<%player> %message", format.toString());
 
     }
 
 
     @Test
     public void testFormatting() {
+        MessageFormat format = SimpleMessageFormat.compile("<%player> %message");
+
+        when(message.getText()).thenReturn("this is test &fmessage");
+
+        Assert.assertEquals("<%1$s> %2$s", format.format(message, manager));
 
     }
 }

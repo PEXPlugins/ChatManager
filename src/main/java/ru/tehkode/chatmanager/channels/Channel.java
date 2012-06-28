@@ -3,11 +3,12 @@ package ru.tehkode.chatmanager.channels;
 import ru.tehkode.chatmanager.Message;
 import ru.tehkode.chatmanager.Speaker;
 import ru.tehkode.chatmanager.format.MessageFormat;
+import ru.tehkode.chatmanager.format.SimpleMessageFormat;
 
 public interface Channel {
 
-    public final static String DEFAULT_FORMAT = "<%player> %message";
-    
+    public static MessageFormat DEFAULT_FORMAT = SimpleMessageFormat.compile("<%player> %message");
+
     public String getName();
     
     public String getTitle();

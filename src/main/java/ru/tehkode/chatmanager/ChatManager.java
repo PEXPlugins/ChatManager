@@ -12,10 +12,12 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerChatEvent;
+import ru.tehkode.chatmanager.bukkit.ChatManagerPlugin;
 import ru.tehkode.chatmanager.channels.*;
 import ru.tehkode.chatmanager.format.MessageFormat;
 import ru.tehkode.chatmanager.format.PlaceholderManager;
 import ru.tehkode.chatmanager.format.SimpleMessageFormat;
+import ru.tehkode.chatmanager.utils.ChatUtils;
 
 import javax.annotation.Nullable;
 import java.util.*;
@@ -49,7 +51,7 @@ public class ChatManager implements Listener {
     }
 
     public void loadConfig(ConfigurationSection config) {
-        this.setDefaultFormat(SimpleMessageFormat.compile(config.getString("message-format", Channel.DEFAULT_FORMAT), this.placeholders));
+        this.setDefaultFormat(SimpleMessageFormat.compile(config.getString("message-format", Channel.DEFAULT_FORMAT.toString())));
 
         if (config.isConfigurationSection("message-formats")) {
             ConfigurationSection formatsSection = config.getConfigurationSection("message-formats");
@@ -59,7 +61,7 @@ public class ChatManager implements Listener {
                     continue;
                 }
 
-                MessageFormat format = SimpleMessageFormat.compile(formatsSection.getString(channelType), this.placeholders);
+                MessageFormat format = SimpleMessageFormat.compile(formatsSection.getString(channelType));
 
                 this.setDefaultFormat(format, channelType);
             }
@@ -71,6 +73,35 @@ public class ChatManager implements Listener {
 
         if (config.isConfigurationSection("speakers")) {
             loadSpeakers(config.getConfigurationSection("speakers"));
+        }
+
+        // Read default channel
+        Channel defaultChannel = this.getChannel(config.getString("default-channel", "global"));
+
+        if (defaultChannel == null) {
+            defaultChannel = this.getChannel("global");
+            // @todo print warning into console
+        }
+
+        setDefaultChannel(defaultChannel);
+
+        // Read per world default channels
+        if (config.isConfigurationSection("default-channels")) {
+            ConfigurationSection channels = config.getConfigurationSection("default-channels");
+            
+            for (String worldName : channels.getKeys(false)) {
+                if (!channels.isString(worldName)) {
+                    continue;
+                }
+                
+                Channel channel = this.getChannel(channels.getString(worldName));
+                if (channel == null){
+                    // @todo print warning
+                    continue;
+                }
+
+
+            }
         }
     }
 
@@ -148,7 +179,15 @@ public class ChatManager implements Listener {
     }
 
     public Channel getDefaultChannel(World world) {
-        return defaultChannels.get(world);
+        return defaultChannels.containsKey(world) ? defaultChannels.get(world) : getDefaultChannel();
+    }
+    
+    public void setDefaultChannel(World world, Channel channel) {
+        this.defaultChannels.put(world, channel);
+    }
+    
+    public void setDefaultChannel(Channel channel) {
+        this.defaultChannels.put(null, channel);
     }
 
     public Channel getChannel(String name) {
@@ -181,11 +220,12 @@ public class ChatManager implements Listener {
     }
 
     public MessageFormat getDefaultFormat(String channelType) {
-        return defaultFormats.get(channelType.toLowerCase());
+        return defaultFormats.containsKey(channelType) ? defaultFormats.get(channelType.toLowerCase()) : getDefaultFormat();
     }
     
     public MessageFormat getDefaultFormat(Class<? extends Channel> channelClass) {
-        return defaultFormats.get(channelClassToString(channelClass));
+        String type = channelClassToString(channelClass);
+        return defaultFormats.containsKey(type) ? defaultFormats.get(type) : getDefaultFormat();
     }
 
     public void setDefaultFormat(MessageFormat defaultFormat) {
@@ -215,8 +255,8 @@ public class ChatManager implements Listener {
     @EventHandler(priority = EventPriority.MONITOR)
     public void onPlayerChat(PlayerChatEvent event) {
         Speaker speaker = this.getSpeaker(event.getPlayer());
-
         Message message = new SimpleMessage(speaker, event.getMessage());
+
         Channel channel = selectChannel(message);
         message.setChannel(channel);
 
@@ -241,7 +281,7 @@ public class ChatManager implements Listener {
         }
 
         // Format message
-        event.setFormat(channel.getMessageFormat().format(message));
+        event.setFormat(ChatUtils.colorize(channel.getMessageFormat().format(message, this.placeholders)));
 
         // Put message back into event
         event.setMessage(message.getText());

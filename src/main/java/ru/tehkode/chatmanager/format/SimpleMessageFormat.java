@@ -17,12 +17,12 @@ public class SimpleMessageFormat implements MessageFormat {
     }
     
     @Override
-    public String format(Message message) {
+    public String format(Message message, PlaceholderCollection placeholders) {
         StringBuilder builder = new StringBuilder();
         
         for(Object piece : compiledFormat) {
             if (piece instanceof PlaceholderBinding) {
-                piece = ((PlaceholderBinding)piece).call(message);
+                piece = ((PlaceholderBinding)piece).call(message, placeholders);
             }
 
             builder.append(piece.toString());
@@ -33,10 +33,20 @@ public class SimpleMessageFormat implements MessageFormat {
 
     @Override
     public String toString() {
-        return SimpleMessageFormat.decompile(this);
+        StringBuilder builder = new StringBuilder();
+
+        for (Object obj : this.compiledFormat) {
+            if (obj instanceof PlaceholderBinding) {
+                obj = ((PlaceholderBinding)obj).toString();
+            }
+
+            builder.append(obj.toString());
+        }
+
+        return builder.toString();
     }
 
-    public static SimpleMessageFormat compile(String format, PlaceholderCollection placeholders) {
+    public static SimpleMessageFormat compile(String format) {
 
         List<Object> stack = new LinkedList<Object>();
 
@@ -50,7 +60,7 @@ public class SimpleMessageFormat implements MessageFormat {
                 stack.add(format.substring(last, current));
             }
 
-            stack.add(new PlaceholderBinding(placeholders, matcher.group(1), matcher.group(2)));
+            stack.add(new PlaceholderBinding(matcher.group(1), matcher.group(2)));
 
             last = current + matcher.group(0).length();
         }
@@ -62,33 +72,17 @@ public class SimpleMessageFormat implements MessageFormat {
         return new SimpleMessageFormat(stack.toArray());
     }
     
-    public static String decompile(SimpleMessageFormat format) {
-        StringBuilder builder = new StringBuilder();
-
-        for (Object obj : format.compiledFormat) {
-            if (obj instanceof PlaceholderBinding) {
-                obj = ((PlaceholderBinding)obj).toString();
-            }
-            
-            builder.append(obj.toString());
-        }
-
-        return builder.toString();
-    }
-    
     protected static class PlaceholderBinding {
-        
-        protected final Placeholder placeholder;
+
         protected final String name;
         protected final String arg;
 
-        public PlaceholderBinding(Placeholder placeholder, final String name, final String arg) {
-            this.placeholder = placeholder;
+        public PlaceholderBinding(final String name, final String arg) {
             this.name = name;
             this.arg = arg; 
         } 
         
-        public String call(Message message) {
+        public String call(Message message, PlaceholderCollection placeholder) {
             String result = placeholder.run(name, arg, message);
             return result != null ? result : "";
         }

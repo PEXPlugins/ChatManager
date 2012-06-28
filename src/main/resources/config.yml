@@ -1,0 +1,15 @@
+message-format: "<%player> %message"
+message-formats:
+    admin: "&6<%player>&f %message"
+    custom: "&7[#%channel]&f <%player> %message"
+default-channel: global
+channels:
+    trading:
+        title:
+        subscribers:
+        - t3hk0d3
+        owner: t3hk0d3
+        private: false
+speakers:
+    t3hk0d3:
+        default-channel: trading

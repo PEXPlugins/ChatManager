@@ -6,11 +6,15 @@ import org.bukkit.entity.Player;
 import ru.tehkode.chatmanager.ChatManager;
 import ru.tehkode.chatmanager.Message;
 import ru.tehkode.chatmanager.Speaker;
+import ru.tehkode.chatmanager.format.MessageFormat;
+import ru.tehkode.chatmanager.format.SimpleMessageFormat;
 
 import java.util.HashSet;
 import java.util.Set;
 
 public final class AdminChannel extends AbstractChannel {
+
+    public static MessageFormat DEFAULT_FORMAT = SimpleMessageFormat.compile("&6<%player>&f %message");
 
     public AdminChannel(ChatManager manager) {
         super(manager, "admin");

@@ -59,25 +59,25 @@ public class BasicPlaceholders extends AbstractPlaceholders {
 
         message.setText(text);
 
-
         return "%2$s";
     }
 
 
     @PlaceholderMethod("channel")
     public String channel(String arg, Message message) {
+        Channel channel = message.getChannel();
+
+        if (channel == null) {
+            return null;
+        }
 
         if (arg == null || "title".equals(arg)) {
-            return message.getChannel().getTitle();
+            return channel.getTitle();
         } else if ("name".equals(arg)) {
-            return message.getChannel().getName();
+            return channel.getName();
         } else if ("owner".equals(arg)) {
-            if (message.getChannel() instanceof ManageableChannel) {
-                ManageableChannel channel = (ManageableChannel)message.getChannel();
-
-                if (channel.hasOwner()){
-                    return channel.getOwner().getName();
-                }
+            if (channel instanceof ManageableChannel && ((ManageableChannel) channel).hasOwner()) {
+                return ((ManageableChannel) channel).getOwner().getName();
             }
         }
 
