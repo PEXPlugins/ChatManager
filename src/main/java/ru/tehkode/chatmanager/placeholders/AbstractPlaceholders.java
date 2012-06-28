@@ -1,4 +1,4 @@
-package ru.tehkode.chatmanager.format;
+package ru.tehkode.chatmanager.placeholders;
 
 import ru.tehkode.chatmanager.Message;
 
@@ -32,12 +32,8 @@ public abstract class AbstractPlaceholders implements PlaceholderCollection {
     }
 
     public String run(String name, String arg, Message message) {
-        MethodPlaceholder placeholder = placeholders.get(name.toLowerCase());
-        if (placeholder != null) {
-            return placeholder.run(name, arg, message);
-        }
-
-        return null;
+        MethodPlaceholder placeholder = placeholders.get(name);
+        return placeholder != null ? placeholder.run(name, arg, message) : null;
     }
 
     @Override

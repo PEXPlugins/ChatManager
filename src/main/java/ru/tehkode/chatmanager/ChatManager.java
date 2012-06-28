@@ -12,11 +12,12 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerChatEvent;
+import org.bukkit.event.player.PlayerJoinEvent;
 import ru.tehkode.chatmanager.bukkit.ChatManagerPlugin;
 import ru.tehkode.chatmanager.channels.*;
 import ru.tehkode.chatmanager.format.MessageFormat;
-import ru.tehkode.chatmanager.format.PlaceholderManager;
-import ru.tehkode.chatmanager.format.SimpleMessageFormat;
+import ru.tehkode.chatmanager.format.MessageFormatFactory;
+import ru.tehkode.chatmanager.placeholders.PlaceholderManager;
 import ru.tehkode.chatmanager.utils.ChatUtils;
 
 import javax.annotation.Nullable;
@@ -51,7 +52,7 @@ public class ChatManager implements Listener {
     }
 
     public void loadConfig(ConfigurationSection config) {
-        this.setDefaultFormat(SimpleMessageFormat.compile(config.getString("message-format", Channel.DEFAULT_FORMAT.toString())));
+        this.setDefaultFormat(MessageFormatFactory.create(config.getString("message-format", Channel.DEFAULT_FORMAT.toString())));
 
         if (config.isConfigurationSection("message-formats")) {
             ConfigurationSection formatsSection = config.getConfigurationSection("message-formats");
@@ -61,7 +62,7 @@ public class ChatManager implements Listener {
                     continue;
                 }
 
-                MessageFormat format = SimpleMessageFormat.compile(formatsSection.getString(channelType));
+                MessageFormat format = MessageFormatFactory.create(formatsSection.getString(channelType));
 
                 this.setDefaultFormat(format, channelType);
             }
@@ -251,14 +252,24 @@ public class ChatManager implements Listener {
         return type.toLowerCase();
     }
 
+    @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
+    public void onPlayerJoin(PlayerJoinEvent event) {
 
-    @EventHandler(priority = EventPriority.MONITOR)
+
+    }
+
+
+    @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
     public void onPlayerChat(PlayerChatEvent event) {
         Speaker speaker = this.getSpeaker(event.getPlayer());
         Message message = new SimpleMessage(speaker, event.getMessage());
 
+        ChatManagerPlugin.debug("Incoming message - ", message);
+
         Channel channel = selectChannel(message);
         message.setChannel(channel);
+
+        ChatManagerPlugin.debug("Selected channel - ", channel);
 
         // Check if player muted
         if (speaker.isMuted() || channel.isMuted(speaker)) {
@@ -280,11 +291,20 @@ public class ChatManager implements Listener {
             recipients.add(receiver.getPlayer());
         }
 
+        ChatManagerPlugin.debug("Recipients - ", recipients);
+
         // Format message
         event.setFormat(ChatUtils.colorize(channel.getMessageFormat().format(message, this.placeholders)));
 
+        ChatManagerPlugin.debug("Message formatted - ", event.getFormat());
+
         // Put message back into event
         event.setMessage(message.getText());
+
+        ChatManagerPlugin.debug("Message text - ", event.getMessage());
+
+        ChatManagerPlugin.debug("Result - " + event.isCancelled());
+        ChatManagerPlugin.debug("Recipients - " + event.getRecipients());
     }
 
     protected Channel selectChannel(Message message) {

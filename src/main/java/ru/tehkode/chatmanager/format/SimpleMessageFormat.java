@@ -1,6 +1,7 @@
 package ru.tehkode.chatmanager.format;
 
 import ru.tehkode.chatmanager.Message;
+import ru.tehkode.chatmanager.placeholders.PlaceholderCollection;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -12,17 +13,20 @@ public class SimpleMessageFormat implements MessageFormat {
     
     protected final Object[] compiledFormat;
 
+    private transient final StringBuilder builder = new StringBuilder(128);
+
     protected SimpleMessageFormat(Object[] compliedFormat) {
         this.compiledFormat = compliedFormat;
     }
     
     @Override
     public String format(Message message, PlaceholderCollection placeholders) {
-        StringBuilder builder = new StringBuilder();
-        
-        for(Object piece : compiledFormat) {
+        builder.setLength(0); // reset builder
+
+        for(Object piece : this.compiledFormat) {
             if (piece instanceof PlaceholderBinding) {
-                piece = ((PlaceholderBinding)piece).call(message, placeholders);
+                PlaceholderBinding binding = (PlaceholderBinding)piece;
+                piece = binding.invoke(message, placeholders);
             }
 
             builder.append(piece.toString());
@@ -36,17 +40,13 @@ public class SimpleMessageFormat implements MessageFormat {
         StringBuilder builder = new StringBuilder();
 
         for (Object obj : this.compiledFormat) {
-            if (obj instanceof PlaceholderBinding) {
-                obj = ((PlaceholderBinding)obj).toString();
-            }
-
-            builder.append(obj.toString());
+            builder.append(obj);
         }
 
         return builder.toString();
     }
 
-    public static SimpleMessageFormat compile(String format) {
+    static SimpleMessageFormat compile(String format) {
 
         List<Object> stack = new LinkedList<Object>();
 
@@ -72,17 +72,17 @@ public class SimpleMessageFormat implements MessageFormat {
         return new SimpleMessageFormat(stack.toArray());
     }
     
-    protected static class PlaceholderBinding {
+    protected final static class PlaceholderBinding {
 
-        protected final String name;
-        protected final String arg;
+        private final String name;
+        private final String arg;
 
         public PlaceholderBinding(final String name, final String arg) {
             this.name = name;
             this.arg = arg; 
         } 
         
-        public String call(Message message, PlaceholderCollection placeholder) {
+        public String invoke(Message message, PlaceholderCollection placeholder) {
             String result = placeholder.run(name, arg, message);
             return result != null ? result : "";
         }

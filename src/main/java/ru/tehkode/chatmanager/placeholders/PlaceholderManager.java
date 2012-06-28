@@ -1,13 +1,15 @@
-package ru.tehkode.chatmanager.format;
+package ru.tehkode.chatmanager.placeholders;
 
 import ru.tehkode.chatmanager.Message;
-import ru.tehkode.chatmanager.placeholders.BasicPlaceholders;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
 public class PlaceholderManager implements PlaceholderCollection {
+    
+    public static long runTime = 0;
+    public static long runCalls = 0;
 
     protected Map<String, Placeholder> placeholders = new HashMap<String, Placeholder>();
 
@@ -23,11 +25,16 @@ public class PlaceholderManager implements PlaceholderCollection {
 
     @Override
     public String run(String name, String arg, Message message) {
-        if (placeholders.containsKey(name.toLowerCase())) {
-            return placeholders.get(name.toLowerCase()).run(name, arg, message);
-        }
+        long start = System.currentTimeMillis();
+        Placeholder placeholder = this.getPlaceholder(name);
 
-        return null;
+        String result = placeholder != null ? placeholder.run(name, arg, message) : null;
+        
+        runTime += (System.currentTimeMillis() - start);
+        runCalls++;
+        
+
+        return result;
     }
 
     @Override
@@ -36,7 +43,7 @@ public class PlaceholderManager implements PlaceholderCollection {
     }
 
     public Placeholder getPlaceholder(String name) {
-        return this.placeholders.get(name.toLowerCase());
+        return this.placeholders.get(name);
     }
 
     public void registerPlaceholder(String name, Placeholder placeholder) {

@@ -26,7 +26,6 @@ import java.io.File;
 import java.util.logging.Logger;
 
 /**
- *
  * @author t3hk0d3
  */
 public class ChatManagerPlugin extends JavaPlugin {
@@ -57,23 +56,23 @@ public class ChatManagerPlugin extends JavaPlugin {
     public void onDisable() {
         manager = null;
 
-        
+
         log.info("ChatManager disabled!");
     }
-    
+
     public static void warning(Object... message) {
-        log.warning(compile(message));
+        if (log != null) log.warning(compile(message));
     }
-    
+
     public static void debug(Object... message) {
-        log.severe(compile("[DEBUG] ", message));
+        if (log != null) log.severe(compile("[DEBUG] ", message));
     }
-    
+
     private static String compile(Object... message) {
         StringBuilder builder = new StringBuilder();
         for (Object part : message) {
-            if(part instanceof Object[]) {
-                part = compile((Object[])part);
+            if (part instanceof Object[]) {
+                part = compile((Object[]) part);
             }
             builder.append(part);
         }

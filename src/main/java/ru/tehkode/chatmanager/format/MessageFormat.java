@@ -1,6 +1,7 @@
 package ru.tehkode.chatmanager.format;
 
 import ru.tehkode.chatmanager.Message;
+import ru.tehkode.chatmanager.placeholders.PlaceholderCollection;
 
 public interface MessageFormat {
 

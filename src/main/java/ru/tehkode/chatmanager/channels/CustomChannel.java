@@ -1,20 +1,23 @@
 package ru.tehkode.chatmanager.channels;
 
 import com.google.common.base.Predicate;
-import com.google.common.collect.Iterables;
 import com.google.common.collect.Maps;
 import org.bukkit.configuration.ConfigurationSection;
 import ru.tehkode.chatmanager.ChatManager;
 import ru.tehkode.chatmanager.Speaker;
 import ru.tehkode.chatmanager.format.MessageFormat;
+import ru.tehkode.chatmanager.format.MessageFormatFactory;
 import ru.tehkode.chatmanager.format.SimpleMessageFormat;
 
 import javax.annotation.Nullable;
-import java.util.*;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 
 public class CustomChannel extends AbstractChannel implements ManageableChannel {
 
-    public final static MessageFormat DEFAULT_FORMAT = SimpleMessageFormat.compile("&7[#%channel]&f <%player> %message");
+    public final static MessageFormat DEFAULT_FORMAT = MessageFormatFactory.create("&7[#%channel]&f <%player> %message");
 
     protected String title;
 
@@ -116,7 +119,7 @@ public class CustomChannel extends AbstractChannel implements ManageableChannel 
         }
 
         if (config.isString("format")) {
-            this.setMessageFormat(SimpleMessageFormat.compile(config.getString("format")));
+            this.setMessageFormat(MessageFormatFactory.create(config.getString("format")));
         }
 
         if (config.isConfigurationSection("subscribers")) {

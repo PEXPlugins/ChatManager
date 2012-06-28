@@ -5,7 +5,6 @@ import ru.tehkode.chatmanager.Message;
 import ru.tehkode.chatmanager.Speaker;
 import ru.tehkode.chatmanager.channels.Channel;
 import ru.tehkode.chatmanager.channels.ManageableChannel;
-import ru.tehkode.chatmanager.format.AbstractPlaceholders;
 import ru.tehkode.chatmanager.utils.ChatUtils;
 
 import java.util.regex.Matcher;

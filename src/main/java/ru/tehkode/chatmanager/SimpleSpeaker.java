@@ -2,19 +2,24 @@ package ru.tehkode.chatmanager;
 
 import org.bukkit.OfflinePlayer;
 import org.bukkit.Server;
+import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.permissions.Permission;
 import org.bukkit.permissions.PermissionAttachment;
 import org.bukkit.permissions.PermissionAttachmentInfo;
 import org.bukkit.plugin.Plugin;
-import ru.tehkode.chatmanager.bukkit.ChatManagerPlugin;
 import ru.tehkode.chatmanager.channels.Channel;
 import ru.tehkode.chatmanager.channels.ManageableChannel;
+import ru.tehkode.chatmanager.format.MessageFormat;
+import ru.tehkode.chatmanager.format.MessageFormatFactory;
+import ru.tehkode.chatmanager.format.SimpleMessageFormat;
 
 import java.util.HashSet;
 import java.util.Set;
 
 public class SimpleSpeaker implements Speaker {
+
+    public final static MessageFormat DISPLAY_NAME_FORMAT = MessageFormatFactory.create("%prefix%player%suffix");
 
     protected final transient ChatManager manager;
 
@@ -27,6 +32,8 @@ public class SimpleSpeaker implements Speaker {
     protected Channel defaultChannel;
 
     protected boolean muted = false;
+
+    protected MessageFormat displayNameFormat = DISPLAY_NAME_FORMAT;
 
     public SimpleSpeaker(final ChatManager manager, final Server server, final String playerName) {
         this.manager = manager;
@@ -49,6 +56,18 @@ public class SimpleSpeaker implements Speaker {
     }
 
     @Override
+    public World getWorld() {
+        Player player = this.getPlayer();
+        return player != null ? player.getWorld() : null;
+    }
+
+    @Override
+    public String getWorldName() {
+        World world = this.getWorld();
+        return world != null ? world.getName() : null;
+    }
+
+    @Override
     public boolean isOnline() {
         return this.server.getOfflinePlayer(this.playerName).isOnline();
     }
@@ -61,6 +80,16 @@ public class SimpleSpeaker implements Speaker {
     @Override
     public String getDisplayName() {
         return this.getPlayer().getDisplayName();
+    }
+
+    @Override
+    public MessageFormat getDisplayNameFormat() {
+        return this.displayNameFormat;
+    }
+
+    @Override
+    public void setDisplayNameFormat(MessageFormat format) {
+        this.displayNameFormat = format;
     }
 
     @Override

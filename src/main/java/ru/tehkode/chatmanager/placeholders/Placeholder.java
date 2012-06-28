@@ -1,4 +1,4 @@
-package ru.tehkode.chatmanager.format;
+package ru.tehkode.chatmanager.placeholders;
 
 import ru.tehkode.chatmanager.Message;
 
