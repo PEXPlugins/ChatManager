@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>ru.tehkode</groupId>
     <artifactId>ChatManager</artifactId>
-    <version>1.18</version>
+    <version>1.19.1</version>
     <name>ChatManager</name>
     <url>https://github.com/t3hk0d3/ChatManager</url>
     <issueManagement>
@@ -45,7 +45,7 @@
         <dependency>
             <groupId>org.bukkit</groupId>
             <artifactId>bukkit</artifactId>
-            <version>1.1-R1</version>
+            <version>1.2.4-R0.1-SNAPSHOT</version>
             <type>jar</type>
         </dependency>
         <dependency>
@@ -53,12 +53,27 @@
             <artifactId>PermissionsEx</artifactId>
             <version>1.18</version>
         </dependency>
+        <!-- Multiverse-Core Dependency -->
+        <dependency>
+            <groupId>com.onarandombox.multiversecore</groupId>
+            <artifactId>Multiverse-Core</artifactId>
+            <version>2.4</version>
+            <type>jar</type>
+            <scope>compile</scope>
+        </dependency>
+        <!-- Multiverse-Core Dependency -->
     </dependencies>
     <repositories>
         <repository>
             <id>bukkit-repo</id>
             <url>http://repo.bukkit.org/content/groups/public</url>
         </repository>
+        <!-- Repo for Multiverse-Core Dependency -->
+        <repository>
+            <id>OnARandomBox</id>
+            <url>http://repo.onarandombox.com/content/groups/public</url>
+        </repository>
+        <!-- Repo for Multiverse-Core Dependency -->
     </repositories>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>

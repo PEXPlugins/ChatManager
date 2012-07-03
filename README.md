@@ -1,3 +1,4 @@
+# ChatManager
 ChatManager, introduced in PEX 1.13, offers reliable "out of the box" functionality of a conventional chat plugin like a iChat or HeroChat.  ChatManager offers basic chat customization such as chat colours and prefixes/suffixes, as well as a per user/group message format and a ranged chat with global chat mode.
 
 ChatManager now supports Multiverse fancy world aliases in chat!
