@@ -28,7 +28,7 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-import org.bukkit.event.player.PlayerChatEvent;
+import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.event.server.PluginEnableEvent;
 import org.bukkit.plugin.Plugin;
 
@@ -83,7 +83,7 @@ public class ChatListener implements Listener {
 	}
 
 	@EventHandler
-	public void onPlayerChat(PlayerChatEvent event) {
+	public void onPlayerChat(AsyncPlayerChatEvent event) {
 		if (event.isCancelled()) {
 			return;
 		}
@@ -146,7 +146,7 @@ public class ChatListener implements Listener {
 	protected String replacePlayerPlaceholders(Player player, String format) {
 		PermissionUser user = PermissionsEx.getPermissionManager().getUser(player);
 		String worldName = player.getWorld().getName();
-		return format.replace("%prefix", this.translateColorCodes(user.getPrefix(worldName))).replace("%suffix", this.translateColorCodes(user.getSuffix(worldName))).replace("%world", this.getWorldAlias(worldName)).replace("%player", player.getDisplayName());
+		return format.replace("%prefix", this.translateColorCodes(user.getPrefix(worldName))).replace("%suffix", this.translateColorCodes(user.getSuffix(worldName))).replace("%world", this.getWorldAlias(worldName)).replace("%player", player.getDisplayName()).replace("%group", user.getGroupsNames()[0]);
 	}
 
 	protected List<Player> getLocalRecipients(Player sender, String message, double range) {
